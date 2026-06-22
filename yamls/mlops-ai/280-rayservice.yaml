@@ -1,0 +1,21 @@
+# Item 280: RayService
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: ray-service
+  namespace: ray
+spec:
+  serveConfigV2: |
+    applications:
+    - name: model-server
+      route_prefix: /api
+      import_path: model_server:app
+  rayClusterConfig:
+    rayVersion: '2.5.0'
+    headGroupSpec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.5.0

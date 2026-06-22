@@ -1,0 +1,30 @@
+# Item 259: Falco Rules ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-rules
+  namespace: falco
+data:
+  custom-rules.yaml: |
+    - rule: Unauthorized Process Execution
+      desc: Detect unauthorized process execution
+      condition: >
+        spawned_process and
+        container and
+        proc.name in (nc, netcat, ncat, telnet) and
+        not container.image.repository in (allowed_images)
+      output: >
+        Unauthorized process started
+        (user=%user.name command=%proc.cmdline image=%container.image.repository)
+      priority: WARNING
+      tags: [shell, execution]
+    - rule: Suspicious File Write
+      desc: Detect suspicious files being written
+      condition: >
+        write and
+        container and
+        fd.name glob ("/etc/*", "/root/*")
+      output: >
+        Suspicious file write detected (file=%fd.name user=%user.name)
+      priority: CRITICAL
+      tags: [filesystem, intrusion]

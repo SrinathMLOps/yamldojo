@@ -1,0 +1,13 @@
+# Item 254: Gatekeeper AssignMetadata
+apiVersion: mutations.gatekeeper.sh/v1
+kind: AssignMetadata
+metadata:
+  name: add-pod-annotations
+spec:
+  match:
+    excludedNamespaces: ["kube-system"]
+  location: metadata.annotations
+  parameters:
+    assign:
+      managed-by: "gatekeeper"
+      modified-date: "2024-01-01"

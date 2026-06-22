@@ -1,0 +1,16 @@
+# Item 249: Kyverno PolicyException
+apiVersion: kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: legacy-app-exception
+  namespace: legacy-apps
+spec:
+  exceptions:
+    - ruleNames:
+        - validate-resources
+      ruleType: validation
+  match:
+    resources:
+      selector:
+        matchLabels:
+          app: legacy-monolith

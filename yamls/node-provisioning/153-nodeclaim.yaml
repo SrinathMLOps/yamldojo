@@ -1,0 +1,29 @@
+# Item 153: Karpenter NodeClaim
+# A NodeClaim represents an intent to provision a single node
+apiVersion: karpenter.sh/v1beta1
+kind: NodeClaim
+metadata:
+  name: worker-node-1
+  namespace: karpenter
+spec:
+  # Reference to the NodePool this claim belongs to
+  nodeClassRef:
+    name: default
+  # Requirements for the claimed node
+  requirements:
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: kubernetes.io/instance-type
+      operator: In
+      values: ["t3.large"]
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["on-demand"]
+  # Kubelet configuration for the node
+  kubelet:
+    maxPods: 110
+    systemReserved:
+      cpu: 100m
+      memory: 100Mi
+      ephemeralStorage: 1Gi

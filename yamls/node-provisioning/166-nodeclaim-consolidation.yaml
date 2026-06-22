@@ -1,0 +1,41 @@
+# Item 166: Karpenter NodeClaim Consolidation
+# NodeClaim configuration demonstrating node consolidation and expiration
+apiVersion: karpenter.sh/v1beta1
+kind: NodeClaim
+metadata:
+  name: consolidation-candidate-1
+  namespace: karpenter
+spec:
+  nodeClassRef:
+    name: default
+  requirements:
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: kubernetes.io/instance-type
+      operator: In
+      values: ["t3.medium"]
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["spot"]
+  expireAfter: 720h
+  expireAfterId: node-123
+  taints:
+    - key: workload-type
+      value: batch
+      effect: NoSchedule
+    - key: karpenter.sh/do-not-consolidate
+      value: "false"
+      effect: NoExecute
+  kubelet:
+    maxPods: 110
+    systemReserved:
+      cpu: 100m
+      memory: 100Mi
+      ephemeralStorage: 2Gi
+    kubeReserved:
+      cpu: 50m
+      memory: 50Mi
+      ephemeralStorage: 1Gi
+    podsPerCore: 2
+    cpuCfsQuota: true

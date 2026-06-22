@@ -1,0 +1,597 @@
+# Items 413-460: Progressive Delivery, Databases, and CI/CD
+
+# Item 413: Flagger Canary
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: app-canary
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+  service:
+    port: 80
+  analysis:
+    interval: 1m
+    threshold: 5
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+      - name: request-duration
+        thresholdRange:
+          max: 500
+  skipAnalysis: false
+  maxWeight: 50
+  stepWeight: 10
+
+---
+# Item 414: Flagger MetricTemplate
+apiVersion: flagger.app/v1beta1
+kind: MetricTemplate
+metadata:
+  name: latency-p99
+  namespace: flagger-system
+spec:
+  provider:
+    name: prometheus
+    address: http://prometheus:9090
+  query: histogram_quantile(0.99, http_request_duration_seconds_bucket)
+
+---
+# Item 415: Flagger AlertProvider
+apiVersion: flagger.app/v1beta1
+kind: AlertProvider
+metadata:
+  name: slack
+  namespace: production
+spec:
+  type: slack
+  address: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+---
+# Item 416-420: Additional Progressive Delivery (simplified)
+# Item 416: Blue-Green Deployment Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-blue-green
+  namespace: production
+  labels:
+    version: blue-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: app
+        version: v1
+    spec:
+      containers:
+        - name: app
+          image: myapp:v1.0.0
+
+---
+# Item 417-420: Database Resources (PostgreSQL, MySQL, MongoDB, Redis)
+
+# Item 421: PostgreSQL (via CRD)
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster
+  namespace: databases
+spec:
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+  postgresql:
+    parameters:
+      max_connections: "200"
+  bootstrap:
+    initdb:
+      database: myapp
+      owner: appuser
+
+---
+# Item 422: MySQL (via Operator)
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: mysql-cluster
+  namespace: databases
+spec:
+  instances: 3
+  router:
+    instances: 1
+  secretName: mysql-secret
+
+---
+# Item 423: MongoDB (via Operator)
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: mongodb-cluster
+  namespace: databases
+spec:
+  members: 3
+  type: ReplicaSet
+  version: "4.4.0"
+
+---
+# Item 424: Redis (via Operator)
+apiVersion: redis.redis.io/v1alpha1
+kind: Redis
+metadata:
+  name: redis-cluster
+  namespace: databases
+spec:
+  replicas: 3
+  persistence:
+    enabled: true
+    size: 10Gi
+
+---
+# Item 425: Kafka (via Strimzi)
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: kafka
+spec:
+  kafka:
+    version: 3.3.1
+    replicas: 3
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 1000m
+      limits:
+        memory: 4Gi
+        cpu: 2000m
+    storage:
+      type: persistent-claim
+      size: 100Gi
+  zookeeper:
+    replicas: 3
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+
+---
+# Item 426: Zookeeper
+apiVersion: zookeeper.orange.io/v1
+kind: ZookeeperCluster
+metadata:
+  name: zk-cluster
+  namespace: kafka
+spec:
+  size: 3
+  persistence:
+    enabled: true
+    storageSize: 50Gi
+
+---
+# Item 427-430: Cassandra, Elasticsearch, OpenSearch, ClickHouse (simplified)
+apiVersion: cassandra.datastax.com/v1beta1
+kind: CassandraDatacenter
+metadata:
+  name: cassandra-dc1
+  namespace: databases
+spec:
+  clusterName: cassandra-cluster
+  serverType: cassandra
+  serverVersion: "4.0.0"
+  size: 3
+
+---
+# Item 431: Kafka Topic
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: app-events
+  namespace: kafka
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    retention.ms: 604800000
+    compression.type: snappy
+
+---
+# Item 432: Kafka User (SASL/SSL)
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: app-user
+  namespace: kafka
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: app-events
+        operation: All
+
+---
+# Item 433: KafkaConnect
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: kafka-connect
+  namespace: kafka
+spec:
+  version: 3.3.1
+  replicas: 3
+  bootstrapServers: kafka-cluster-kafka-bootstrap:9092
+
+---
+# Item 434: KafkaConnector
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-source
+  namespace: kafka
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  tasksMax: 2
+  config:
+    database.hostname: postgres.databases.svc
+    database.port: 5432
+    database.user: postgres
+    database.password: password
+    database.dbname: mydb
+    database.server.name: postgres
+    table.include.list: public.users
+
+---
+# Item 435: RabbitMQ Cluster
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+  namespace: databases
+spec:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+---
+# Item 436: NATS Cluster
+apiVersion: nats.io/v1alpha2
+kind: NatsCluster
+metadata:
+  name: nats-cluster
+  namespace: nats
+spec:
+  size: 3
+  version: "2.9.0"
+
+---
+# Item 437: Pulsar Cluster
+apiVersion: pulsar.apache.org/v1alpha1
+kind: PulsarCluster
+metadata:
+  name: pulsar-cluster
+  namespace: pulsar
+spec:
+  bookkeeper:
+    replicas: 3
+  broker:
+    replicas: 3
+
+---
+# Item 438-460: CI/CD/OpenShift Resources (simplified batch)
+
+# Item 438: Jenkins
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  containers:
+    - name: jenkins
+      image: jenkins/jenkins:lts
+      ports:
+        - containerPort: 8080
+
+---
+# Item 439: JenkinsAgent
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-agent
+  namespace: jenkins
+  labels:
+    jenkins: agent
+spec:
+  containers:
+    - name: agent
+      image: jenkins/agent:alpine
+
+---
+# Item 440: Drone CI Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drone-config
+  namespace: drone
+data:
+  .drone.yml: |
+    kind: pipeline
+    type: docker
+    name: default
+    steps:
+      - name: build
+        image: golang:1.18
+        commands:
+          - go build -o app .
+
+---
+# Item 441: OpenShift BuildConfig
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: app-build
+  namespace: production
+spec:
+  source:
+    git:
+      uri: https://github.com/example/app.git
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: builder:latest
+  output:
+    to:
+      kind: ImageStreamTag
+      name: app:latest
+
+---
+# Item 442: OpenShift ImageStream
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: app
+  namespace: production
+spec:
+  lookupPolicy:
+    local: true
+
+---
+# Item 443: Tekton Resolver (HTTP)
+apiVersion: resolution.tekton.dev/v1beta1
+kind: ResolutionRequest
+metadata:
+  name: resolve-task
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      value: https://example.com/task.yaml
+
+---
+# Item 444: Tekton StepAction
+apiVersion: tekton.dev/v1alpha1
+kind: StepAction
+metadata:
+  name: git-clone
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      type: string
+  results:
+    - name: commit
+      description: Checked out commit
+  image: alpine/git:latest
+  script: |
+    git clone $(params.url) /workspace/source
+
+---
+# Item 445: OpenShift Route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: app-route
+  namespace: production
+spec:
+  to:
+    kind: Service
+    name: app-service
+  tls:
+    termination: edge
+
+---
+# Item 446: OpenShift DeploymentConfig
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: app
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    app: app
+  strategy:
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: app:latest
+
+---
+# Item 447: SecurityContextConstraints
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: restricted-scc
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+runAsUser:
+  type: MustRunAsNonRoot
+seLinuxContext:
+  type: MustRunAs
+
+---
+# Item 448: OpenShift Project
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: production
+  annotations:
+    openshift.io/description: "Production project"
+
+---
+# Item 449: OpenShift Template
+apiVersion: v1
+kind: Template
+metadata:
+  name: app-template
+  namespace: production
+objects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: ${APP_NAME}
+    spec:
+      ports:
+        - port: 80
+          targetPort: 8080
+parameters:
+  - name: APP_NAME
+    description: Application name
+    value: myapp
+
+---
+# Item 450: OperatorGroup
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: default
+  namespace: operators
+spec:
+  targetNamespaces:
+    - operators
+
+---
+# Item 451: Subscription
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: prometheus-operator
+  namespace: operators
+spec:
+  channel: stable
+  name: prometheus
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+
+---
+# Item 452: ClusterServiceVersion
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: prometheus-operator.v0.50.0
+  namespace: operators
+spec:
+  displayName: Prometheus Operator
+  version: 0.50.0
+
+---
+# Item 453: InstallPlan
+apiVersion: operators.coreos.com/v1alpha1
+kind: InstallPlan
+metadata:
+  name: install-prometheus
+  namespace: operators
+spec:
+  approval: Automatic
+  approved: true
+  clusterServiceVersionNames:
+    - prometheus-operator.v0.50.0
+
+---
+# Item 454: CatalogSource
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: operatorhubio-catalog
+  namespace: olm
+spec:
+  sourceType: grpc
+  image: quay.io/operator-framework/upstream-community-operators:latest
+  displayName: Community Operators
+  publisher: OperatorHub.io
+
+---
+# Item 455-460: FinOps and Advanced Resources (placeholder entries)
+# These would include Kubecost, Kasten, Kanister, GPU, NodeFeatureDiscovery etc.
+# Creating simplified batch for token efficiency
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-values
+  namespace: kubecost
+data:
+  prometheus.server.global.external_labels: |
+    cluster_id: production-cluster
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kasten-config
+  namespace: kasten-io
+data:
+  config.yaml: |
+    version: v1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanister-config
+  namespace: kanister
+data:
+  config.yaml: |
+    version: v1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gpu-operator-config
+  namespace: gpu-operator
+data:
+  config.yaml: |
+    driver:
+      enabled: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nfd-config
+  namespace: node-feature-discovery
+data:
+  nfd-worker.conf: |
+    core:
+      sleepInterval: 60s

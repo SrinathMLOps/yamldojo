@@ -1,0 +1,25 @@
+# Item 173: CiliumBGPClusterConfig
+# BGP cluster configuration for Cilium
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp-config
+  namespace: karpenter
+spec:
+  bgpInstances:
+    - name: instance-65001
+      localASN: 65001
+      peers:
+        - peerASN: 65002
+          peerConfigRef:
+            name: bgp-peer-external
+        - peerASN: 65003
+          peerConfigRef:
+            name: bgp-peer-datacenter
+  serviceAdvertisements:
+    - serviceSelector:
+        matchLabels:
+          advertise: bgp
+      advertisements:
+        - advertisementType: pod
+        - advertisementType: service

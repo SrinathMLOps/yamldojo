@@ -1,0 +1,18 @@
+# Item 323: Tekton TriggerTemplate
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: pipeline-trigger
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-commit-sha
+      description: Git commit SHA
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: build-deploy-run-
+      spec:
+        pipelineRef:
+          name: build-and-deploy

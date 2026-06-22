@@ -1,0 +1,33 @@
+# Item 218: Argo Workflows - ClusterWorkflowTemplate
+# ClusterWorkflowTemplate is a cluster-wide reusable workflow template
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: global-build-template
+spec:
+  entrypoint: ci-pipeline
+  templates:
+    - name: ci-pipeline
+      dag:
+        tasks:
+          - name: lint
+            template: lint
+          - name: build
+            template: build
+            dependencies: lint
+          - name: scan
+            template: security-scan
+            dependencies: build
+    - name: lint
+      container:
+        image: golangci/golangci-lint:v1.40
+        command: [golangci-lint, run]
+    - name: build
+      container:
+        image: golang:1.16
+        command: [sh, -c]
+        args: ['go build -o app .']
+    - name: security-scan
+      container:
+        image: aquasec/trivy:latest
+        command: [trivy, image]

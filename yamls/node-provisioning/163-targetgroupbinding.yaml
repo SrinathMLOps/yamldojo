@@ -1,0 +1,35 @@
+# Item 163: TargetGroupBinding
+# Binds a Kubernetes service to an AWS Load Balancer target group
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: web-service-tg-binding
+  namespace: production
+spec:
+  serviceRef:
+    name: web-service
+    port: 8080
+  # Target group definition
+  targetGroupArn: arn:aws:elasticloadbalancing:us-east-1:ACCOUNT_ID:targetgroup/web-service-tg/1234567890abcdef
+  # Health check configuration
+  healthCheck:
+    enabled: true
+    healthyThresholdCount: 2
+    unhealthyThresholdCount: 2
+    timeoutSeconds: 3
+    intervalSeconds: 15
+    path: /health
+    port: "8080"
+    protocol: HTTP
+    matcher:
+      httpCode: "200"
+  targetType: ip
+  # VPC networking configuration
+  networking:
+    ingress:
+      - from:
+          - securityGroup:
+              id: sg-12345678
+        ports:
+          - protocol: TCP
+            port: 8080

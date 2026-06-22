@@ -1,0 +1,16 @@
+# Item 243: Instrumentation
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: app-instrumentation
+  namespace: production
+spec:
+  exporter:
+    otlp:
+      endpoint: http://otel-collector.monitoring:4317
+  propagators:
+    - jaeger
+    - b3
+  sampler:
+    type: parentbased_traceidratio
+    argument: "0.25"

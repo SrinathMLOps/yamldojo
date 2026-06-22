@@ -1,0 +1,19 @@
+# Item 180: Istio RequestAuthentication
+# RequestAuthentication defines authentication policies
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: production
+spec:
+  jwtRules:
+    - issuer: "https://auth.example.com"
+      jwksUri: "https://auth.example.com/.well-known/jwks.json"
+      audiences: "api.example.com"
+      forwardOriginalToken: true
+      outputPayloadToHeader: "x-jwt-payload"
+    - issuer: "https://secondary-auth.example.com"
+      jwksUri: "https://secondary-auth.example.com/.well-known/jwks.json"
+  selector:
+    matchLabels:
+      app: web-service

@@ -1,0 +1,46 @@
+# Item 215: Argo Workflows - Workflow
+# Workflow is a DAG-based workflow for Kubernetes
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: multi-step-workflow
+  namespace: argo
+spec:
+  entrypoint: main-dag
+  arguments:
+    parameters:
+      - name: message
+        value: "Hello World"
+  templates:
+    - name: main-dag
+      dag:
+        tasks:
+          - name: step1
+            template: print-message
+            arguments:
+              parameters:
+                - name: message
+                  value: "{{workflow.parameters.message}}"
+          - name: step2
+            template: sleep-task
+            dependencies: step1
+          - name: step3
+            template: print-message
+            dependencies: step2
+            arguments:
+              parameters:
+                - name: message
+                  value: "Workflow complete!"
+    - name: print-message
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: alpine:3.12
+        command: [sh, -c]
+        args: ['echo {{inputs.parameters.message}}']
+    - name: sleep-task
+      container:
+        image: alpine:3.12
+        command: [sh, -c]
+        args: ['echo "Sleeping..."; sleep 5; echo "Awake!"']

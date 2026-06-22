@@ -1,0 +1,14 @@
+# Item 325: Tekton EventListener
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-triggers-admin
+  triggers:
+    - name: github-push-trigger
+      bindings:
+        - ref: github-binding
+      template:
+        ref: pipeline-trigger

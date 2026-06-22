@@ -1,0 +1,31 @@
+# Item 155: Cluster Autoscaler ConfigMap
+# Configuration for Cluster Autoscaler behavior and scaling parameters
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-config
+  namespace: karpenter
+data:
+  # ASG configuration for auto-scaling
+  asg-config.yaml: |
+    AWSUseStaticInstance: false
+    ASGs:
+      - name: eks-workers
+        minSize: 2
+        maxSize: 20
+        desiredCapacity: 5
+      - name: eks-gpu-workers
+        minSize: 0
+        maxSize: 5
+        desiredCapacity: 0
+  
+  # Scaling behavior parameters
+  scaling-behavior.yaml: |
+    scaleDownEnabled: true
+    scaleDownDelay: 10m
+    scaleDownDelayAfterFailure: 3m
+    scaleDownUtilizationThreshold: 0.65
+    newPodScaleDownDelay: 2m
+    skipNodesWithLocalStorage: false
+    skipNodesWithSystemPods: true
+    maxNodeProvisionTime: 15m

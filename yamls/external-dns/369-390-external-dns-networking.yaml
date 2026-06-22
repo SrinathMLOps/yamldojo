@@ -1,0 +1,288 @@
+# Items 369-390: External DNS and Networking Resources
+
+# Item 369: DNSEndpoint
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: myapp-endpoint
+  namespace: production
+spec:
+  endpoints:
+    - dnsName: myapp.example.com
+      targets:
+        - 10.0.0.1
+      recordType: A
+      ttl: 300
+
+---
+# Item 370: HostEndpoint (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: HostEndpoint
+metadata:
+  name: eth0
+  namespace: default
+spec:
+  node: node-1
+  interfaceName: eth0
+  expectedIPs:
+    - 192.168.1.10
+
+---
+# Item 371: GlobalNetworkPolicy (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: deny-all-ingress
+spec:
+  selector: all()
+  types:
+    - Ingress
+  ingress: []
+
+---
+# Item 372: GlobalNetworkSet (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkSet
+metadata:
+  name: external-ips
+spec:
+  nets:
+    - 192.168.1.0/24
+    - 10.0.0.0/8
+
+---
+# Item 373: IPPool (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  name: default-pool
+spec:
+  cidr: 192.168.0.0/16
+  ipipMode: Always
+  natOutgoing: true
+
+---
+# Item 374: BGPConfiguration (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: BGPConfiguration
+metadata:
+  name: default
+spec:
+  logSeverityScreen: Info
+  nodeToNodeMeshEnabled: true
+  asNumber: 64512
+
+---
+# Item 375: FelixConfiguration (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: FelixConfiguration
+metadata:
+  name: default
+spec:
+  ipv6Support: false
+  chainInsertMode: Append
+
+---
+# Item 376: BGPPeer (Calico)
+apiVersion: crd.projectcalico.org/v1
+kind: BGPPeer
+metadata:
+  name: bgppeer-global
+spec:
+  peerIP: 192.168.1.254
+  asNumber: 64513
+
+---
+# Item 377: MetalLB - IPAddressPool
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: first-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.1.100-192.168.1.200
+
+---
+# Item 378: MetalLB - L2Advertisement
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: layer2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - first-pool
+
+---
+# Item 379: MetalLB - BGPAdvertisement
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: bgpadvertisement
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - first-pool
+
+---
+# Item 380: MetalLB - BGPPeer
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: bgppeer
+  namespace: metallb-system
+spec:
+  peer: 192.168.1.254
+  asn: 64513
+  myAsn: 64512
+
+---
+# Item 381: NGINX VirtualServer
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: cafe
+  namespace: production
+spec:
+  host: cafe.example.com
+  upstreams:
+    - name: coffee
+      service: coffee-svc
+      port: 80
+  routes:
+    - path: /coffee
+      action:
+        pass: coffee
+
+---
+# Item 382: NGINX VirtualServerRoute
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
+metadata:
+  name: coffee
+  namespace: production
+spec:
+  host: cafe.example.com
+  upstreams:
+    - name: coffee
+      service: coffee-svc
+      port: 80
+  subroutes:
+    - path: /coffee/premium
+      action:
+        pass: coffee
+
+---
+# Item 383: NGINX TransportServer
+apiVersion: k8s.nginx.org/v1alpha1
+kind: TransportServer
+metadata:
+  name: dns-tcp
+  namespace: production
+spec:
+  listener:
+    protocolVersion: TCP
+    port: 5353
+  upstreams:
+    - name: dns
+      service: coredns
+      port: 53
+  action:
+    pass: dns
+
+---
+# Item 384: Kong Plugin
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limit
+  namespace: production
+spec:
+  plugin: rate-limiting
+  config:
+    minute: 60
+    hour: 1000
+
+---
+# Item 385: Kong ClusterPlugin
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: global-rate-limit
+spec:
+  plugin: rate-limiting
+  config:
+    minute: 100
+    hour: 5000
+
+---
+# Item 386: Kong Ingress
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: kong-ingress-config
+  namespace: production
+spec:
+  upstream:
+    hash_on: none
+    healthchecks:
+      active:
+        https_verify_certificate: true
+        unhealthy:
+          interval: 0
+
+---
+# Item 387: Ambassador Mapping
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: backend-mapping
+  namespace: production
+spec:
+  prefix: /backend/
+  service: backend:8080
+
+---
+# Item 388: Ambassador Host
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: example-host
+  namespace: production
+spec:
+  hostname: api.example.com
+  tlsSecret:
+    name: api-tls
+  requestPolicy:
+    insecure:
+      action: Route
+
+---
+# Item 389: Traefik IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: web-ingressroute
+  namespace: production
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`example.com`)
+      kind: Rule
+      services:
+        - name: web
+          port: 80
+
+---
+# Item 390: Traefik Middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+  namespace: production
+spec:
+  stripPrefix:
+    prefixes:
+      - /stripme

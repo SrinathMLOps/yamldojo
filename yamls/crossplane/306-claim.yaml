@@ -1,0 +1,10 @@
+# Item 306: Crossplane Claim
+apiVersion: database.example.com/v1alpha1
+kind: PostgreSQL
+metadata:
+  name: my-database
+  namespace: production
+spec:
+  storageGB: 100
+  compositionRef:
+    name: postgresql-aws

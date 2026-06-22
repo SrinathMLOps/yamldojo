@@ -1,0 +1,28 @@
+# Item 182: Istio WasmPlugin
+# WasmPlugin allows extending Envoy with WebAssembly modules
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: rate-limiting
+  namespace: production
+spec:
+  phase: AUTHZ
+  priority: 100
+  selector:
+    matchLabels:
+      app: api-gateway
+  url: "oci://containers.example.com/rate-limit:v1.0"
+  imagePullPolicy: IfNotPresent
+  sha256: "abc123def456"
+  env:
+    - name: RATE_LIMIT_PER_SECOND
+      value: "100"
+    - name: BURST_SIZE
+      value: "200"
+    - name: LOG_LEVEL
+      value: "info"
+  vmConfig:
+    runtime: "envoy.wasm.runtime.v8"
+    env:
+      - name: WASM_LOG_LEVEL
+        value: "trace"

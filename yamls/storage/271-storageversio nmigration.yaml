@@ -1,0 +1,11 @@
+# Item 271: StorageVersionMigration
+apiVersion: storagemigration.k8s.io/v1alpha1
+kind: StorageVersionMigration
+metadata:
+  name: migrate-pods-to-v1
+spec:
+  resource:
+    group: ""
+    version: v1
+    resource: pods
+  continueToken: ""

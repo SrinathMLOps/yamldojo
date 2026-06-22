@@ -1,0 +1,14 @@
+# Item 211: Vault Connection
+# VaultConnection defines the connection details to a Vault server
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultConnection
+metadata:
+  name: vault-connection
+  namespace: production
+spec:
+  address: https://vault.example.com:8200
+  caCertSecretRef: vault-ca-cert
+  tlsServerName: vault.example.com
+  skipTLSVerify: false
+  headers:
+    X-Vault-Namespace: "my-namespace"

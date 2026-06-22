@@ -1,0 +1,13 @@
+# Item 263: Velero Schedule
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-backup-schedule
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"
+  template:
+    includedNamespaces: ["*"]
+    storageLocation: aws-s3
+    volumeSnapshotLocation: aws-ebs
+    ttl: 720h

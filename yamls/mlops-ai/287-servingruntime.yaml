@@ -1,0 +1,18 @@
+# Item 287: ServingRuntime (KServe)
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: sklearn-runtime
+  namespace: kserve-inference-system
+spec:
+  supportedModelFormats:
+    - name: sklearn
+      version: "0"
+      autoSelect: true
+  containers:
+    - name: kserve-container
+      image: kserve/sklearnserver:latest
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http1

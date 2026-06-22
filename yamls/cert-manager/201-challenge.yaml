@@ -1,0 +1,37 @@
+# Item 201: Cert-Manager Challenge
+# Challenge resource for ACME HTTP01 and DNS01 validation
+apiVersion: acme.cert-manager.io/v1
+kind: Challenge
+metadata:
+  name: example-com-http01
+  namespace: production
+spec:
+  type: http-01
+  domain: "example.com"
+  token: "example-token-123"
+  key: "example-key-456"
+  orderRef:
+    name: example-order-1
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+---
+apiVersion: acme.cert-manager.io/v1
+kind: Challenge
+metadata:
+  name: example-com-dns01
+  namespace: production
+spec:
+  type: dns-01
+  domain: "example.com"
+  token: "dns-token-123"
+  key: "dns-key-456"
+  orderRef:
+    name: example-order-1
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  solver:
+    dns01:
+      route53:
+        region: us-east-1

@@ -1,0 +1,14 @@
+# Item 229: Flux - ImageRepository
+# ImageRepository scans container registries for image versions
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: app-registry
+  namespace: flux-system
+spec:
+  interval: 5m
+  image: myregistry.azurecr.io/myapp
+  secretRef:
+    name: registry-credentials
+  excludeDigests:
+    - "sha256:abc123"

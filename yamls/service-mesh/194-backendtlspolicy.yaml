@@ -1,0 +1,41 @@
+# Item 194: Gateway API - BackendTLSPolicy
+# BackendTLSPolicy configures TLS for backend connections
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: secure-backend-tls
+  namespace: production
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: api-service
+      port: 443
+  tls:
+    caCertRefs:
+      - name: ca-cert
+        group: ""
+        kind: ConfigMap
+    wellKnownCACerts: system
+    hostname: "api.example.com"
+---
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: mtls-backend
+  namespace: production
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: secure-service
+  tls:
+    caCertRefs:
+      - name: ca-bundle
+        group: ""
+        kind: Secret
+    clientCertRef:
+      name: client-cert
+      group: ""
+      kind: Secret
+    hostname: "secure.example.com"

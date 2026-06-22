@@ -1,0 +1,18 @@
+# Item 276: CephFilesystem
+apiVersion: ceph.rook.io/v1
+kind: CephFilesystem
+metadata:
+  name: rook-cephfs
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    failureDomain: host
+    replicated:
+      size: 3
+  dataPools:
+    - failureDomain: host
+      replicated:
+        size: 3
+  metadataServer:
+    activeCount: 1
+    activeStandby: true

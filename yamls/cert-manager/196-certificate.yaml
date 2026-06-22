@@ -1,0 +1,42 @@
+# Item 196: Cert-Manager Certificate
+# Certificate resource for requesting SSL/TLS certificates
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: api-example-com
+  namespace: production
+spec:
+  secretName: api-tls-secret
+  isCA: false
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # 15 days
+  commonName: "api.example.com"
+  dnsNames:
+    - "api.example.com"
+    - "*.api.example.com"
+    - "www.example.com"
+  keySize: 2048
+  keyAlgorithm: rsa
+  keyEncoding: pkcs1
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  usages:
+    - digital signature
+    - key encipherment
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-tls-cert
+  namespace: production
+spec:
+  secretName: internal-tls
+  isCA: true
+  duration: 87600h  # 10 years
+  renewBefore: 720h  # 30 days
+  commonName: "*.production.svc.cluster.local"
+  issuerRef:
+    name: internal-ca-issuer
+    kind: Issuer

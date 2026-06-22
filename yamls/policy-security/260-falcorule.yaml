@@ -1,0 +1,20 @@
+# Item 260: FalcoRule
+apiVersion: falco.org/v1
+kind: FalcoRule
+metadata:
+  name: custom-falco-rules
+  namespace: falco
+spec:
+  rules: |
+    - rule: Suspicious Container Escape
+      desc: Detect potential container escape attempts
+      condition: >
+        execve and
+        container and
+        (proc.name == "runc" or proc.name == "crun") and
+        proc.args contains "/bin/sh"
+      output: >
+        Potential container escape detected
+        (command=%proc.cmdline container=%container.name)
+      priority: CRITICAL
+      tags: [container, security]

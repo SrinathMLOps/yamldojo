@@ -1,0 +1,10 @@
+# Item 270: StorageVersion
+apiVersion: internal.apiserver.k8s.io/v1alpha1
+kind: StorageVersion
+metadata:
+  name: pods.
+spec:
+  storageVersions:
+    - appVersion: v1
+      encodingVersion: v1
+  commonEncodingVersion: v1

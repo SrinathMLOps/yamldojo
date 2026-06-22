@@ -1,0 +1,19 @@
+# Item 232: Flux - Bucket
+# Bucket refers to a bucket from object storage (S3, GCS, etc.)
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: Bucket
+metadata:
+  name: config-bucket
+  namespace: flux-system
+spec:
+  interval: 5m
+  provider: aws
+  bucketName: my-config-bucket
+  endpoint: s3.amazonaws.com
+  region: us-east-1
+  secretRef:
+    name: aws-credentials
+  timeout: 30s
+  ignore: |
+    # exclude dotfiles
+    .*

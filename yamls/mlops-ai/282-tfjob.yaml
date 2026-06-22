@@ -1,0 +1,32 @@
+# Item 282: TFJob (TensorFlow)
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: tensorflow-job
+  namespace: kubeflow
+spec:
+  tfReplicaSpecs:
+    Chief:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              image: tensorflow/tensorflow:2.11.0
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              image: tensorflow/tensorflow:2.11.0
+    ParameterServer:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              image: tensorflow/tensorflow:2.11.0

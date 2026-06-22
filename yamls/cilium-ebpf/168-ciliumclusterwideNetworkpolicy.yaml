@@ -1,0 +1,33 @@
+# Item 168: CiliumClusterwideNetworkPolicy
+# Cluster-wide network policy applying to all namespaces
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-external-egress
+spec:
+  description: "Deny all egress to external networks except whitelisted"
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: ""
+    - toNamespaces:
+        - matchLabels:
+            io.kubernetes.pod.namespace: production
+    - toCIDRs:
+        - cidr: 10.0.0.0/8
+    - toServices:
+        - k8sService:
+            namespace: kube-system
+            name: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+    - toFQDNs:
+        - matchName: "api.example.com"
+        - matchName: "*.trusted-domain.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

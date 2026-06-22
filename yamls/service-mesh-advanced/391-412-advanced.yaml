@@ -1,0 +1,334 @@
+# Items 391-412: Advanced Service Mesh and Security
+
+# Item 391: Kuma Mesh
+apiVersion: kuma.io/v1alpha1
+kind: Mesh
+metadata:
+  name: default
+spec:
+  mtls:
+    enabledBackend: ca-1
+    backends:
+      - name: ca-1
+        type: builtin
+  networking:
+    outbound:
+      passthrough: true
+
+---
+# Item 392: Kuma TrafficRoute
+apiVersion: kuma.io/v1alpha1
+kind: TrafficRoute
+metadata:
+  namespace: production
+  name: route-to-api
+spec:
+  targetRef:
+    kind: Service
+    name: api
+  to:
+    - targetRef:
+        kind: Service
+        name: backend
+      weight: 100
+
+---
+# Item 393: Kuma TrafficPermission
+apiVersion: kuma.io/v1alpha1
+kind: TrafficPermission
+metadata:
+  namespace: production
+  name: allow-frontend-to-api
+spec:
+  targetRef:
+    kind: Service
+    name: api
+  rules:
+    - from:
+        - targetRef:
+            kind: Service
+            name: frontend
+      action: ALLOW
+
+---
+# Item 394: Kuma TrafficTrace
+apiVersion: kuma.io/v1alpha1
+kind: TrafficTrace
+metadata:
+  namespace: production
+  name: all-traffic
+spec:
+  targetRef:
+    kind: Mesh
+  tags:
+    - key: service
+      value: "*"
+
+---
+# Item 395: Kuma TrafficLog
+apiVersion: kuma.io/v1alpha1
+kind: TrafficLog
+metadata:
+  namespace: production
+  name: all-traffic-logs
+spec:
+  targetRef:
+    kind: Mesh
+  backends:
+    - name: file
+      type: File
+      file:
+        path: /var/log/traffic.log
+
+---
+# Item 396: Kuma FaultInjection
+apiVersion: kuma.io/v1alpha1
+kind: FaultInjection
+metadata:
+  namespace: production
+  name: fault-injection
+spec:
+  targetRef:
+    kind: Service
+    name: backend
+  conf:
+    delay:
+      percentage: 100
+      value: 5s
+    abort:
+      percentage: 10
+      httpStatus: 500
+
+---
+# Item 397: Consul Proxy Defaults
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ProxyDefaults
+metadata:
+  name: global
+  namespace: consul
+spec:
+  config:
+    protocol: tcp
+
+---
+# Item 398: Trivy ImageVulnerabilityReport
+apiVersion: aquasecurity.github.io/v1alpha1
+kind: ImageVulnerabilityReport
+metadata:
+  name: nginx-vuln-report
+  namespace: production
+spec:
+  image: nginx:latest
+  scanTime: "2024-01-01T00:00:00Z"
+
+---
+# Item 399: Falco Rule
+apiVersion: falco.org/v1
+kind: FalcoRule
+metadata:
+  name: malicious-behavior
+  namespace: falco
+spec:
+  rules: |
+    - rule: Shell Spawned in Container
+      desc: Shell spawned in container
+      condition: spawned_process and container and proc.name = sh
+      output: Shell spawned in container
+      priority: WARNING
+
+---
+# Item 400: Falco Sidekick Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-sidekick-config
+  namespace: falco
+data:
+  config.yaml: |
+    slack:
+      webhook_url: https://hooks.slack.com/services/YOUR/WEBHOOK
+    elasticsearch:
+      enabled: true
+      host_port: elasticsearch:9200
+
+---
+# Item 401: Image Policy Webhook
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: image-policy-webhook
+webhooks:
+  - name: image-policy.k8s.io
+    clientConfig:
+      url: https://image-policy-webhook:8443/validate
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+
+---
+# Item 402: Cosign ClusterImagePolicy
+apiVersion: policy.sigstore.dev/v1alpha1
+kind: ClusterImagePolicy
+metadata:
+  name: image-policy
+spec:
+  images:
+    - glob: registry.example.com/**
+  authorities:
+    - name: cosign-pubkey
+      keySecret:
+        secretRef:
+          name: cosign-pub
+          namespace: sigstore-system
+
+---
+# Item 403: Sigstore PolicyController
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: sigstore-policy-webhook
+webhooks:
+  - name: policy.sigstore.dev
+    clientConfig:
+      service:
+        name: sigstore-webhook
+        namespace: sigstore-system
+        path: /validate
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+
+---
+# Item 404: RuntimeClass (kata)
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: kata
+handler: kata
+scheduling:
+  nodeSelector:
+    kataruntime: "true"
+
+---
+# Item 405: KataConfig
+apiVersion: kataconfiguration.openshift.io/v1
+kind: KataConfig
+metadata:
+  name: example-kataconfig
+spec:
+  kataMonitorImage: quay.io/kata-operator/kata-monitor:latest
+
+---
+# Item 406: gVisor RuntimeClass
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+scheduling:
+  nodeSelector:
+    gvisor: "true"
+
+---
+# Item 407: Pod Security Policy (deprecated, for reference)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+spec:
+  privileged: false
+  seLinux:
+    rule: MustRunAs
+  runAsUser:
+    rule: MustRunAsNonRoot
+  volumes:
+    - configMap
+    - secret
+
+---
+# Item 408: Network Policy (advanced)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: advanced-policy
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Item 409: Egress Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-external-egress
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 53
+
+---
+# Item 410: Security Context
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+  namespace: production
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 2000
+  containers:
+    - name: sec-ctx-demo
+      image: busybox:1.28
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+
+---
+# Item 411: Pod Security Standards
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: restricted-namespace
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# Item 412: RBAC - RoleBinding for Security
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: readonly-users
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: reader
+subjects:
+  - kind: Group
+    name: view-only-group
+    apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,20 @@
+# Item 311: Knative Service
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: production
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/target: "100"
+        autoscaling.knative.dev/maxScale: "10"
+    spec:
+      containers:
+        - image: gcr.io/knative-samples/hello
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"

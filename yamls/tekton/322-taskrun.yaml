@@ -1,0 +1,12 @@
+# Item 322: Tekton TaskRun
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  name: build-run
+  namespace: tekton-pipelines
+spec:
+  taskRef:
+    name: build-image
+  params:
+    - name: image-name
+      value: my-app:v1.0.0

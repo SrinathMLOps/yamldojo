@@ -1,0 +1,20 @@
+# Item 297: NetworkChaos
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: network-delay
+  namespace: chaos-testing
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - production
+    labelSelectors:
+      app: backend
+  delay:
+    latency: "100ms"
+    jitter: "10ms"
+  duration: 5m
+  scheduler:
+    cron: "@every 1h"

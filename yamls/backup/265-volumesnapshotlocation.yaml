@@ -1,0 +1,11 @@
+# Item 265: Velero VolumeSnapshotLocation
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: aws-ebs
+  namespace: velero
+spec:
+  provider: aws
+  config:
+    region: us-east-1
+    snapshotLocation: us-east-1c

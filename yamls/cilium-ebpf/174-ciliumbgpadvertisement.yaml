@@ -1,0 +1,29 @@
+# Item 174: CiliumBGPAdvertisement
+# BGP advertisement configuration for routes and services
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPAdvertisement
+metadata:
+  name: service-advertisements
+  namespace: karpenter
+spec:
+  advertisements:
+    - advertisementType: service
+      selector:
+        matchLabels:
+          expose: bgp
+      attributes:
+        communities:
+          standard:
+            - "65001:1000"
+        localPreference: 100
+    - advertisementType: pod
+      podSelector:
+        matchLabels:
+          bgp-advertise: enabled
+      attributes:
+        communities:
+          standard:
+            - "65001:2000"
+  selector:
+    matchLabels:
+      bgp-instance: primary

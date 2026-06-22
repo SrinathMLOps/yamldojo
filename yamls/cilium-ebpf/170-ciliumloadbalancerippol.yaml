@@ -1,0 +1,23 @@
+# Item 170: CiliumLoadBalancerIPPool
+# IP pool for LB services when using Cilium's native LB implementation
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: default-pool
+  namespace: karpenter
+spec:
+  cidrs:
+    - cidr: 10.100.0.0/24
+      start: 10.100.0.10
+      end: 10.100.0.250
+    - cidr: 10.101.0.0/24
+  # Selector to determine which services use this pool
+  serviceSelector:
+    matchExpressions:
+      - key: pool
+        operator: In
+        values: ["default"]
+  # Disable on specific services
+  serviceExcludeSelector:
+    matchLabels:
+      pool: external

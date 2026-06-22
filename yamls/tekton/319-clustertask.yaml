@@ -1,0 +1,11 @@
+# Item 319: Tekton ClusterTask
+apiVersion: tekton.dev/v1
+kind: ClusterTask
+metadata:
+  name: deploy-cluster
+spec:
+  steps:
+    - name: deploy
+      image: kubectl:latest
+      script: |
+        kubectl apply -f deployment.yaml

@@ -1,0 +1,22 @@
+# Item 216: Argo Workflows - CronWorkflow
+# CronWorkflow schedules workflows on a cron schedule
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: daily-backup-workflow
+  namespace: argo
+spec:
+  schedule: "0 2 * * *"
+  timezone: America/Los_Angeles
+  startingDeadlineSeconds: 0
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  workflowSpec:
+    entrypoint: backup-task
+    templates:
+      - name: backup-task
+        container:
+          image: alpine:3.12
+          command: [sh, -c]
+          args: ['echo "Running backup at $(date)"; tar czf /tmp/backup.tar.gz /data']

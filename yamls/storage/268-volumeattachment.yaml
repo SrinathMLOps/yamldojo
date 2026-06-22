@@ -1,0 +1,10 @@
+# Item 268: VolumeAttachment
+apiVersion: storage.k8s.io/v1
+kind: VolumeAttachment
+metadata:
+  name: csi-volume-attach-12345
+spec:
+  attacher: ebs.csi.aws.com
+  nodeName: ip-10-0-1-100.ec2.internal
+  source:
+    persistentVolumeName: pv-001

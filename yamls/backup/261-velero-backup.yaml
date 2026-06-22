@@ -1,0 +1,15 @@
+# Item 261: Velero Backup
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: daily-backup
+  namespace: velero
+spec:
+  includedNamespaces: ["*"]
+  storageLocation: aws-s3
+  volumeSnapshotLocation: aws-ebs
+  ttl: 720h
+  includeClusterResources: true
+  metadata:
+    labels:
+      schedule: daily

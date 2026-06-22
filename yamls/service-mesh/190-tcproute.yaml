@@ -1,0 +1,21 @@
+# Item 190: Gateway API - TCPRoute
+# TCPRoute represents a raw TCP route within a Gateway
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: database-tcp-route
+  namespace: production
+spec:
+  parentRefs:
+    - name: core-gateway
+      namespace: production
+      sectionName: tcp-postgres
+  rules:
+    - backendRefs:
+        - name: postgres-primary
+          port: 5432
+          weight: 100
+    - backendRefs:
+        - name: postgres-replica
+          port: 5432
+          weight: 50

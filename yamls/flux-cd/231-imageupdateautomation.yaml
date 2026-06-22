@@ -1,0 +1,27 @@
+# Item 231: Flux - ImageUpdateAutomation
+# ImageUpdateAutomation automatically updates image tags in git
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageUpdateAutomation
+metadata:
+  name: app-image-updater
+  namespace: flux-system
+spec:
+  interval: 15m
+  sourceRef:
+    kind: GitRepository
+    name: app-repository
+  git:
+    commit:
+      author:
+        email: flux@example.com
+        name: Flux
+      messageTemplate: |
+        Automated image update
+        Timestamp: {{ now | date "2006-01-02T15:04:05Z07:00" }}
+    push:
+      branch: main
+  update:
+    strategy: Setters
+  policySelector:
+    matchLabels:
+      update-strategy: auto

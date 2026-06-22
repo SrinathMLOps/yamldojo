@@ -1,0 +1,35 @@
+# Item 213: Argo CD - ApplicationSet
+# ApplicationSet generates multiple applications based on generators
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-region-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - cluster: us-west
+            version: v1.0.0
+          - cluster: us-east
+            version: v1.0.1
+          - cluster: eu-west
+            version: v1.0.0
+  template:
+    metadata:
+      name: "app-{{cluster}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/example/app-repo.git
+        path: deploy/
+        targetRevision: "{{version}}"
+        helm:
+          values: |
+            environment: {{cluster}}
+      destination:
+        server: "https://{{cluster}}.example.com"
+        namespace: production
+      syncPolicy:
+        automated:
+          prune: true

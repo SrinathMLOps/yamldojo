@@ -1,0 +1,11 @@
+# Item 267: Velero DataDownload
+apiVersion: velero.io/v1beta1
+kind: DataDownload
+metadata:
+  name: pvc-download
+  namespace: velero
+spec:
+  targetPVC:
+    name: restored-data
+    namespace: production
+  backupStorageLocation: aws-s3

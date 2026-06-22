@@ -1,0 +1,17 @@
+# Item 316: Knative Trigger
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: event-trigger
+  namespace: production
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.sampletype1
+      source: https://example.com/source
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-handler

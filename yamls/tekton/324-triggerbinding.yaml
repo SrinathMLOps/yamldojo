@@ -1,0 +1,12 @@
+# Item 324: Tekton TriggerBinding
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-commit-sha
+      value: $(body.head_commit.id)
+    - name: git-repo-url
+      value: $(body.repository.clone_url)

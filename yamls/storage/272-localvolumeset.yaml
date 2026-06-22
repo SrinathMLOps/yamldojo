@@ -1,0 +1,17 @@
+# Item 272: LocalVolumeSet
+apiVersion: local.storage.openshift.io/v1
+kind: LocalVolumeSet
+metadata:
+  name: local-disks
+  namespace: openshift-local-storage
+spec:
+  nodeSelector:
+    matchLabels:
+      local-storage: enabled
+  storageClassName: local-storage
+  volumeMode: Filesystem
+  fstype: ext4
+  devices:
+    devicePaths:
+      - /dev/sda
+      - /dev/sdb

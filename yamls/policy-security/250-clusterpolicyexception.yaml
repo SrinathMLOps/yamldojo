@@ -1,0 +1,16 @@
+# Item 250: Kyverno ClusterPolicyException
+apiVersion: kyverno.io/v1
+kind: ClusterPolicyException
+metadata:
+  name: system-pods-exception
+spec:
+  exceptions:
+    - policyName: require-resource-limits
+      ruleNames:
+        - validate-resources
+      ruleType: validation
+  match:
+    resources:
+      namespaces:
+        - kube-system
+        - karpenter

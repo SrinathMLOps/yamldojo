@@ -1,0 +1,13 @@
+# Item 241: ThanosRuler
+apiVersion: monitoring.coreos.com/v1
+kind: ThanosRuler
+metadata:
+  name: thanos-ruler
+  namespace: monitoring
+spec:
+  replicas: 2
+  queryEndpoints:
+    - dnssrv+http://_http._tcp.prometheus-operated.monitoring.svc.cluster.local
+  ruleSelector:
+    matchLabels:
+      thanos-ruler: enabled

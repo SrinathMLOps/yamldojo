@@ -1,0 +1,11 @@
+# Item 262: Velero Restore
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: restore-from-backup
+  namespace: velero
+spec:
+  backupName: daily-backup
+  excludedNamespaces: []
+  restorePVs: true
+  includedNamespaces: ["production"]

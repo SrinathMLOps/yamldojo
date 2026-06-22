@@ -1,0 +1,37 @@
+# Item 188: Gateway API - GatewayClass
+# GatewayClass is a cluster-level resource defining a gateway controller type
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: istio
+  namespace: production
+spec:
+  controllerName: istio.io/gateway-controller
+  description: "Istio Gateway Controller"
+  parametersRef:
+    group: istio.io
+    kind: IstioGateway
+    name: default-params
+    namespace: istio-system
+  statusConditions:
+    - type: Accepted
+      status: "True"
+      reason: ValidGatewayClass
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: nginx
+  namespace: production
+spec:
+  controllerName: k8s.io/ingress-nginx
+  description: "NGINX Ingress Controller"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy
+  namespace: production
+spec:
+  controllerName: projectcontour.io/contour
+  description: "Envoy Ingress Controller via Contour"

@@ -1,0 +1,22 @@
+# Item 292: Experiment (Katib)
+apiVersion: "kubeflow.org/v1alpha3"
+kind: Experiment
+metadata:
+  name: random-example
+  namespace: kubeflow
+spec:
+  algorithm:
+    algorithmName: random
+  parallelTrialCount: 3
+  maxTrialCount: 12
+  maxFailedTrialCount: 3
+  objective:
+    type: maximize
+    goal: 0.99
+    objectiveMetricName: accuracy
+  parameters:
+    - name: learning_rate
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.03"

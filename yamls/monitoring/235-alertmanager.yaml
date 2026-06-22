@@ -1,0 +1,26 @@
+# Item 235: Alertmanager
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: kube-alertmanager
+  namespace: monitoring
+spec:
+  replicas: 3
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+  config:
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'slack'
+    receivers:
+      - name: 'slack'
+        slack_configs:
+          - api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'

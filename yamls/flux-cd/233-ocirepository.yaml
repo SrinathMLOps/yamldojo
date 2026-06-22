@@ -1,0 +1,15 @@
+# Item 233: Flux - OCIRepository
+# OCIRepository pulls artifacts from OCI-compliant registries
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: app-oci-repo
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: oci://ghcr.io/example/app-config
+  ref:
+    tag: v1.0.0
+  secretRef:
+    name: oci-credentials
+  timeout: 30s

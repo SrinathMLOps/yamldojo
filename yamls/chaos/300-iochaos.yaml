@@ -1,0 +1,15 @@
+# Item 300: IOChaos
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: io-latency
+  namespace: chaos-testing
+spec:
+  action: latency
+  mode: all
+  selector:
+    namespaces:
+      - production
+  latency: "100ms"
+  percent: 50
+  duration: 5m

@@ -1,0 +1,12 @@
+# Item 321: Tekton PipelineRun
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: build-deploy-run
+  namespace: tekton-pipelines
+spec:
+  pipelineRef:
+    name: build-and-deploy
+  serviceAccountName: tekton-admin
+  timeouts:
+    pipeline: 1h

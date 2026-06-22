@@ -1,0 +1,10 @@
+# Item 273: LVMCluster
+apiVersion: lvm.topolvm.io/v1alpha1
+kind: LVMCluster
+metadata:
+  name: lvm-cluster
+  namespace: openshift-storage
+spec:
+  storage:
+    useAllDevices: true
+    useAllNodes: true

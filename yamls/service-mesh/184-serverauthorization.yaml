@@ -1,0 +1,26 @@
+# Item 184: Linkerd ServerAuthorization
+# ServerAuthorization defines which clients can access a server
+apiVersion: policy.linkerd.io/v1beta1
+kind: ServerAuthorization
+metadata:
+  name: api-authz
+  namespace: production
+spec:
+  server:
+    selector:
+      matchLabels:
+        app: api-service
+  client:
+    meshTLS:
+      identities:
+        - name: web-service
+          namespace: production
+  # Allow specific namespaces
+  allow:
+    - kind: All
+    - kind: ServiceAccount
+      name: web-service
+  # Deny specific clients
+  deny:
+    - kind: ServiceAccount
+      name: untrusted-service

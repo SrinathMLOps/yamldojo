@@ -1,0 +1,20 @@
+# Item 293: Trial (Katib)
+apiVersion: "kubeflow.org/v1alpha3"
+kind: Trial
+metadata:
+  name: random-example-1
+  namespace: kubeflow
+spec:
+  primaryContainerName: training-container
+  parameters:
+    - name: learning_rate
+      value: "0.02"
+  trialSpec:
+    apiVersion: batch/v1
+    kind: Job
+    spec:
+      template:
+        spec:
+          containers:
+            - name: training-container
+              image: kubeflow/mxnet-training:latest

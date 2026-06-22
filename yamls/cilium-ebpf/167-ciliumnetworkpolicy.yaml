@@ -1,0 +1,42 @@
+# Item 167: CiliumNetworkPolicy
+# Cilium network policy for fine-grained egress/ingress control at L3-L7 levels
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: production
+spec:
+  description: "Allow frontend pods to communicate with backend on port 8080"
+  endpointSelector:
+    matchLabels:
+      app: backend
+      version: v1
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: frontend
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: "/api/.*"
+              - method: POST
+                path: "/api/.*"
+    - fromNamespaces:
+        - matchLabels:
+            io.kubernetes.pod.namespace: monitoring
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: database
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP

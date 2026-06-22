@@ -1,0 +1,20 @@
+# Item 225: Flux - GitRepository
+# GitRepository defines a Git repository as a source
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: app-repository
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/example/app-repo.git
+  ref:
+    branch: main
+  secretRef:
+    name: git-credentials
+  timeout: 60s
+  ignore: |
+    # exclude all
+    /*
+    # include deploy dir
+    !/deploy

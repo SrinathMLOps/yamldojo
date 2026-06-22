@@ -1,0 +1,27 @@
+# Item 224: Argo Rollouts - Experiment
+# Experiment runs two versions of an app side-by-side for comparison
+apiVersion: argoproj.io/v1alpha1
+kind: Experiment
+metadata:
+  name: ab-test-experiment
+  namespace: production
+spec:
+  duration: 10m
+  templates:
+    - name: baseline
+      specRef: StableRS
+    - name: canary
+      specRef: CanaryRS
+  analyses:
+    - name: compare-results
+      templateName: success-rate-analysis
+      args:
+        - name: service-name
+          value: "myapp"
+      interval: 1m
+      count: 5
+      threshold: 1  # At least 1 successful analysis
+  metrics:
+    - name: success-rate
+      query: "success_rate"
+  scaleDownDelay: 5m

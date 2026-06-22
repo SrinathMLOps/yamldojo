@@ -1,0 +1,23 @@
+# Item 284: MPIJob
+apiVersion: kubeflow.org/v1
+kind: MPIJob
+metadata:
+  name: mpi-job
+  namespace: kubeflow
+spec:
+  slotsPerWorker: 1
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: mpi
+              image: mpi:latest
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: mpi
+              image: mpi:latest

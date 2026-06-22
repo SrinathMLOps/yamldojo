@@ -1,0 +1,28 @@
+# Item 283: PyTorchJob
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: pytorch-job
+  namespace: kubeflow
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: pytorch/pytorch:1.12.0-cuda11.6-cudnn8-runtime
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: pytorch/pytorch:1.12.0-cuda11.6-cudnn8-runtime
+              resources:
+                limits:
+                  nvidia.com/gpu: 1

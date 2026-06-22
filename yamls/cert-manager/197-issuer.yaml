@@ -1,0 +1,43 @@
+# Item 197: Cert-Manager Issuer
+# Issuer is a namespace-scoped certificate issuer
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-staging
+  namespace: production
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@example.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: internal-ca-issuer
+  namespace: production
+spec:
+  ca:
+    secretName: internal-ca-key
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: vault-issuer
+  namespace: production
+spec:
+  vault:
+    server: https://vault.example.com:8200
+    path: pki/sign/example-dot-com
+    auth:
+      kubernetes:
+        mountPath: /v1/auth/kubernetes
+        role: cert-manager
+    caCertSecretRef:
+      name: vault-ca
+      key: ca.crt

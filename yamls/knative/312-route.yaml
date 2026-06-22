@@ -1,0 +1,10 @@
+# Item 312: Knative Route
+apiVersion: serving.knative.dev/v1
+kind: Route
+metadata:
+  name: hello-world-route
+  namespace: production
+spec:
+  traffic:
+    - revisionName: hello-world-00001
+      percent: 100

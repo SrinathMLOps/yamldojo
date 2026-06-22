@@ -1,0 +1,8 @@
+# Item 310: Crossplane Configuration
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: database-stack
+spec:
+  package: xpkg.upbound.io/example/database-stack:v1.0.0
+  packagePullPolicy: IfNotPresent

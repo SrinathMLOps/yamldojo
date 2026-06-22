@@ -1,0 +1,31 @@
+# Item 234: Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: kube-prometheus
+  namespace: monitoring
+spec:
+  replicas: 2
+  retention: 30d
+  retentionSize: 50GB
+  serviceAccountName: prometheus
+  serviceMonitorSelector:
+    matchLabels:
+      prometheus: kube-prometheus
+  podMonitorSelector:
+    matchLabels:
+      prometheus: kube-prometheus
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi

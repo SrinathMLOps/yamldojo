@@ -1,0 +1,11 @@
+# Item 266: Velero DataUpload
+apiVersion: velero.io/v1beta1
+kind: DataUpload
+metadata:
+  name: pvc-upload
+  namespace: velero
+spec:
+  backupStorageLocation: aws-s3
+  sourcePVC:
+    name: app-data
+    namespace: production

@@ -1,0 +1,18 @@
+# Item 315: Knative Broker
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: production
+spec:
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: config-br-default-channel
+    namespace: knative-eventing
+  delivery:
+    deadLetterSink:
+      ref:
+        apiVersion: v1
+        kind: Service
+        name: error-handler

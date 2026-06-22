@@ -1,0 +1,29 @@
+# Item 164: IngressClassParams
+# Parameters for the AWS Load Balancer Ingress Controller
+apiVersion: elbv2.k8s.aws/v1alpha1
+kind: IngressClassParams
+metadata:
+  name: aws-load-balancer-ingress-class-params
+  namespace: karpenter
+spec:
+  # Set group name to share load balancer across multiple ingresses
+  group:
+    name: production-alb
+  # Tags for the load balancer
+  tags:
+    - key: Environment
+      value: production
+    - key: ManagedBy
+      value: karpenter
+  # IP address type (ipv4 or dualstack)
+  ipAddressType: ipv4
+  # Subnets for the load balancer
+  subnets:
+    - subnet-12345678
+    - subnet-87654321
+  # Security groups
+  securityGroups:
+    - sg-12345678
+  scheme: internet-facing
+  # Load balancer type (application or network)
+  loadBalancerClass: alb

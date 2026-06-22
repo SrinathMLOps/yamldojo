@@ -1,0 +1,16 @@
+# Item 200: Cert-Manager Order
+# Order is a resource created by cert-manager for ACME order processing
+apiVersion: acme.cert-manager.io/v1
+kind: Order
+metadata:
+  name: example-order-1
+  namespace: production
+spec:
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0K...
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: "example.com"
+  dnsNames:
+    - "example.com"
+    - "*.example.com"

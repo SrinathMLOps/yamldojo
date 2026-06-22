@@ -1,0 +1,331 @@
+# Items 327-349: Native K8s Resources (condensed)
+
+# Item 327: Binding
+apiVersion: v1
+kind: Binding
+metadata:
+  name: pod-binding
+  namespace: production
+target:
+  apiVersion: v1
+  kind: Pod
+  name: target-pod
+---
+# Item 328: TokenRequest
+apiVersion: authentication.k8s.io/v1
+kind: TokenRequest
+metadata:
+  name: token-request
+  namespace: default
+spec:
+  audiences:
+    - https://api.example.com
+
+---
+# Item 329: SelfSubjectReview
+apiVersion: authentication.k8s.io/v1alpha1
+kind: SelfSubjectReview
+metadata:
+  name: self-review
+spec: {}
+
+---
+# Item 330: SelfSubjectAccessReview
+apiVersion: authorization.k8s.io/v1
+kind: SelfSubjectAccessReview
+metadata:
+  name: self-access-review
+spec:
+  resourceAttributes:
+    verb: get
+    group: ""
+    resource: pods
+
+---
+# Item 331: SelfSubjectRulesReview
+apiVersion: authorization.k8s.io/v1
+kind: SelfSubjectRulesReview
+metadata:
+  name: self-rules-review
+spec:
+  namespace: default
+
+---
+# Item 332: SubjectAccessReview
+apiVersion: authorization.k8s.io/v1
+kind: SubjectAccessReview
+metadata:
+  name: subject-access-review
+spec:
+  user: user@example.com
+  resourceAttributes:
+    verb: create
+    group: ""
+    resource: pods
+
+---
+# Item 333: LocalSubjectAccessReview
+apiVersion: authorization.k8s.io/v1
+kind: LocalSubjectAccessReview
+metadata:
+  name: local-subject-access
+  namespace: production
+spec:
+  user: user@example.com
+  resourceAttributes:
+    verb: get
+    group: ""
+    resource: pods
+
+---
+# Item 334: TokenReview
+apiVersion: authentication.k8s.io/v1
+kind: TokenReview
+metadata:
+  name: token-review
+spec:
+  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+---
+# Item 335: APIService
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1.custom.io
+spec:
+  service:
+    name: custom-api
+    namespace: custom-system
+  group: custom.io
+  version: v1
+  groupPriorityMinimum: 100
+  versionPriority: 15
+
+---
+# Item 336: FlowSchema
+apiVersion: flowcontrol.apiserver.k8s.io/v1beta3
+kind: FlowSchema
+metadata:
+  name: exempt-workloads
+spec:
+  distinguisherMethod:
+    type: ByUser
+  matchingPrecedence: 1000
+  priorityLevelConfiguration:
+    name: exempt-level
+  rules:
+    - subjects:
+        - kind: ServiceAccount
+          serviceAccount:
+            name: admin
+            namespace: kube-system
+
+---
+# Item 337: PriorityLevelConfiguration
+apiVersion: flowcontrol.apiserver.k8s.io/v1beta3
+kind: PriorityLevelConfiguration
+metadata:
+  name: global-default
+spec:
+  type: Limited
+  limited:
+    assuredConcurrencyShares: 20
+    limitResponse:
+      type: Queue
+      queuing:
+        handSize: 6
+        queueLengthLimit: 50
+
+---
+# Item 338: MutatingAdmissionPolicy
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: pod-mutation-policy
+spec:
+  failurePolicy: fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  mutations:
+    - expression: "object.spec.securityContext = {'runAsNonRoot': true}"
+
+---
+# Item 339: MutatingAdmissionPolicyBinding
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: pod-mutation-binding
+spec:
+  policyName: pod-mutation-policy
+  paramRef:
+    name: ""
+  matchResources:
+    excludedNamespaces: ["kube-system"]
+
+---
+# Item 340: VerticalPodAutoscalerCheckpoint
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscalerCheckpoint
+metadata:
+  name: vpa-checkpoint
+  namespace: kube-system
+spec: {}
+
+---
+# Item 341: Provisioner (Karpenter Legacy)
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: legacy-provisioner
+  namespace: karpenter
+spec:
+  providerRef:
+    name: default
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["on-demand", "spot"]
+
+---
+# Item 342: Machine (Cluster API)
+apiVersion: machine.cluster.x-k8s.io/v1beta1
+kind: Machine
+metadata:
+  name: my-machine-1
+  namespace: default
+spec:
+  clusterName: my-cluster
+  bootstrap:
+    dataSecretName: my-machine-bootstrap
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AWSMachine
+    name: my-machine-1
+
+---
+# Item 343: MachineDeployment
+apiVersion: machine.cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: my-machine-deployment
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      pool: worker
+  template:
+    metadata:
+      labels:
+        pool: worker
+    spec:
+      clusterName: my-cluster
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AWSMachineTemplate
+        name: my-machine-template
+
+---
+# Item 344: MachineSet
+apiVersion: machine.cluster.x-k8s.io/v1beta1
+kind: MachineSet
+metadata:
+  name: my-machineset
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      pool: worker
+  template:
+    metadata:
+      labels:
+        pool: worker
+    spec:
+      clusterName: my-cluster
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AWSMachine
+        name: my-machine
+
+---
+# Item 345: MachineHealthCheck
+apiVersion: machine.cluster.x-k8s.io/v1beta1
+kind: MachineHealthCheck
+metadata:
+  name: machine-health-check
+  namespace: default
+spec:
+  clusterName: my-cluster
+  selector:
+    matchLabels:
+      pool: worker
+  unhealthyConditions:
+    - type: Ready
+      status: Unknown
+      timeout: 5m
+    - type: Ready
+      status: "False"
+      timeout: 5m
+
+---
+# Item 346: ClusterClass
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: ClusterClass
+metadata:
+  name: my-cluster-class
+  namespace: default
+spec:
+  controlPlane:
+    ref:
+      apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlaneTemplate
+      name: my-control-plane-template
+  infrastructure:
+    ref:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AWSClusterTemplate
+      name: my-cluster-template
+  workers:
+    machineDeployments:
+      - class: default-worker
+        template:
+          ref:
+            apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+            kind: AWSMachineTemplate
+            name: default-worker-template
+
+---
+# Item 347: RuntimeClass
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: kata
+handler: kata
+scheduling:
+  nodeSelector:
+    kata-runtime: true
+
+---
+# Item 348: KataConfig (OpenShift)
+apiVersion: kataconfiguration.openshift.io/v1
+kind: KataConfig
+metadata:
+  name: example-kataconfig
+spec:
+  kataMonitorImage: quay.io/kata-operator/kata-operator:latest
+
+---
+# Item 349: SandboxConfig
+apiVersion: sandbox.openshift.io/v1
+kind: SandboxConfig
+metadata:
+  name: sandbox-config
+spec:
+  allowedRuntimes:
+    - kata
+    - crun

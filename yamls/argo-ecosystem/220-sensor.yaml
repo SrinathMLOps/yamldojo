@@ -1,0 +1,40 @@
+# Item 220: Argo Events - Sensor
+# Sensor processes events from EventSources and triggers workflows
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: workflow-trigger
+  namespace: argo-events
+spec:
+  dependencies:
+    - name: github-event
+      eventSourceName: github-events
+      eventName: push-events
+  triggers:
+    - template:
+        name: github-workflow-trigger
+        argoWorkflow:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: create
+          parameters:
+            - src:
+                dependencyName: github-event
+                dataKey: body.repository.name
+              dest: spec.arguments.parameters.0.value
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: ci-workflow-
+                namespace: argo
+              spec:
+                entrypoint: ci-pipeline
+                templates:
+                  - name: ci-pipeline
+                    container:
+                      image: alpine:3.12
+                      command: [echo]
+                      args: ["Triggered by GitHub webhook"]

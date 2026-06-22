@@ -1,0 +1,27 @@
+# Item 244: Grafana
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: kube-grafana
+  namespace: monitoring
+spec:
+  dataStorage:
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    path: /grafana
+    pathType: Prefix
+  service:
+    type: ClusterIP
+    port: 3000
+  config:
+    log:
+      level: info
+    auth:
+      generic_oauth:
+        enabled: true
+        client_id: grafana-oauth
+        scopes: openid profile email

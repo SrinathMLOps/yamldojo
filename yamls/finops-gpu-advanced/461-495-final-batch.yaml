@@ -1,0 +1,554 @@
+# Items 461-495: FinOps, GPU, Advanced Resources and Custom Resources
+
+# Item 461-465: FinOps Resources (Kubecost, Kasten)
+apiVersion: kubeflow.org/v1
+kind: FinOpsReportConfig
+metadata:
+  name: finops-report
+  namespace: kubecost
+spec:
+  reportingInterval: 24h
+  includeLabels:
+    - cost-center
+    - department
+---
+# Item 466: Nvidia Device Plugin
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: nvidia-device-plugin-ds
+  template:
+    metadata:
+      labels:
+        name: nvidia-device-plugin-ds
+    spec:
+      containers:
+        - name: nvidia-device-plugin
+          image: nvcr.io/nvidia/k8s-device-plugin:v0.14.0
+          volumeMounts:
+            - name: device-metrics
+              mountPath: /run/prometheus
+      volumes:
+        - name: device-metrics
+          hostPath:
+            path: /run/prometheus
+---
+# Item 467: GPU Operator
+apiVersion: nvidia.com/v1
+kind: ClusterPolicy
+metadata:
+  name: gpu-cluster-policy
+  namespace: gpu-operator
+spec:
+  driver:
+    enabled: true
+    image: nvcr.io/nvidia/driver:525.105.17
+  toolkit:
+    enabled: true
+---
+# Item 468: NodeFeatureDiscovery
+apiVersion: nfd.k8s-sigs.io/v1alpha1
+kind: NodeFeatureDiscovery
+metadata:
+  name: nfd
+  namespace: node-feature-discovery
+spec:
+  workerConfig:
+    configData: |
+      core:
+        sleepInterval: 60s
+---
+# Item 469: ModelMesh
+apiVersion: serving.kserve.io/v1alpha1
+kind: ModelMesh
+metadata:
+  name: modelmesh
+  namespace: kserve-inference-system
+spec:
+  defaultImageUri: kserve/modelmesh-serving:latest
+---
+# Item 470: SeldonDeployment
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-model
+  namespace: production
+spec:
+  name: iris-classifier
+  predictors:
+    - name: predictor
+      replicas: 3
+      graph:
+        name: classifier
+        implementation: SKLEARN_SERVER
+        modelUri: s3://bucket/iris-model
+---
+# Item 471: BentoDeployment
+apiVersion: serving.bentoml.io/v1alpha2
+kind: BentoDeployment
+metadata:
+  name: bento-classifier
+  namespace: production
+spec:
+  bento: iris-classifier:latest
+  runners:
+    - name: model_runner
+      replicaCount: 2
+---
+# Item 472: KServe Inference Service (advanced)
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: custom-model
+  namespace: kserve-inference-system
+spec:
+  predictor:
+    custom:
+      container:
+        image: myregistry/custom-model:latest
+        env:
+          - name: MODEL_PATH
+            value: /mnt/models
+---
+# Item 473: Triton Inference Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton-inference-server
+  namespace: inference
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: triton
+  template:
+    metadata:
+      labels:
+        app: triton
+    spec:
+      containers:
+        - name: triton
+          image: nvcr.io/nvidia/tritonserver:23.04-py3
+          ports:
+            - containerPort: 8000
+            - containerPort: 8001
+            - containerPort: 8002
+---
+# Item 474: Volcano Job
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: volcano-job
+  namespace: volcano-system
+spec:
+  minAvailable: 3
+  tasks:
+    - replicas: 3
+      name: worker
+      template:
+        spec:
+          containers:
+            - name: work
+              image: alpine:3.12
+              command: ["/bin/sh", "-c", "sleep 3600"]
+              resources:
+                requests:
+                  cpu: 1
+                  memory: 1Gi
+---
+# Item 475: CustomResourceDefinition
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: customapps.example.io
+spec:
+  group: example.io
+  names:
+    kind: CustomApp
+    plural: customapps
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+---
+# Item 476: Lease (distributed coordination)
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  name: controller-lease
+  namespace: default
+spec:
+  holderIdentity: controller-instance-1
+  leaseDurationSeconds: 15
+  acquireTime: "2024-01-01T00:00:00Z"
+  renewTime: "2024-01-01T00:00:10Z"
+---
+# Item 477: PriorityClass (advanced scheduling)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: system-critical
+value: 2000000000
+globalDefault: false
+description: "Used for system-critical pods"
+---
+# Item 478: Pod Topology Spread Constraint
+apiVersion: v1
+kind: Pod
+metadata:
+  name: topology-spread-pod
+  namespace: production
+spec:
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: myapp
+  containers:
+    - name: app
+      image: myapp:latest
+---
+# Item 479: Resource Quota with Scopes
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: production
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values: ["high", "medium"]
+---
+# Item 480: Limit Range with Multiple Resources
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: memory-cpu-limits
+  namespace: production
+spec:
+  limits:
+    - max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      type: Container
+    - max:
+        cpu: "4"
+        memory: 8Gi
+      type: Pod
+---
+# Item 481-490: Advanced Scheduling and Config Resources
+# HPA with custom metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app-hpa-advanced
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Pods
+      pods:
+        metric:
+          name: custom_metric
+        target:
+          type: AverageValue
+          averageValue: "1000"
+---
+# Item 482: Vertical Pod Autoscaler
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: app-vpa
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "*"
+        minAllowed:
+          cpu: 100m
+          memory: 128Mi
+        maxAllowed:
+          cpu: 2
+          memory: 4Gi
+---
+# Item 483: Pod Disruption Budget with unhealthyPodEvictionPolicy
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: app-pdb
+  namespace: production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: myapp
+  unhealthyPodEvictionPolicy: AlwaysAllow
+---
+# Item 484: StatefulSet with Ordinals
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: stateful-app
+  namespace: production
+spec:
+  serviceName: stateful-svc
+  replicas: 3
+  ordinals:
+    start: 0
+  selector:
+    matchLabels:
+      app: stateful
+  template:
+    metadata:
+      labels:
+        app: stateful
+    spec:
+      containers:
+        - name: app
+          image: myapp:latest
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+# Item 485: DaemonSet with NodeAffinity
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: monitor
+  template:
+    metadata:
+      labels:
+        app: monitor
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values: ["monitoring"]
+      containers:
+        - name: monitor
+          image: monitor:latest
+---
+# Item 486: Job with TTL and ActiveDeadlineSeconds
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-job
+  namespace: production
+spec:
+  ttlSecondsAfterFinished: 3600
+  activeDeadlineSeconds: 1800
+  backoffLimit: 3
+  spec:
+    containers:
+      - name: cleanup
+        image: cleanup:latest
+        command: ["./cleanup.sh"]
+---
+# Item 487: CronJob with suspend
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: maintenance
+  namespace: production
+spec:
+  suspend: false
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: maintenance
+              image: maintenance:latest
+          restartPolicy: OnFailure
+---
+# Item 488: ConfigMap with Binary Data
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-binary
+  namespace: production
+binaryData:
+  app.bin: "<base64-encoded-binary-data>"
+---
+# Item 489: Secret with dockercfg
+apiVersion: v1
+kind: Secret
+metadata:
+  name: docker-secret
+  namespace: production
+type: kubernetes.io/dockercfg
+data:
+  .dockercfg: '<base64-encoded-docker-config>'
+---
+# Item 490: Service with externalTrafficPolicy
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+  namespace: production
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  selector:
+    app: myapp
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+# Item 491: Ingress with pathType
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: advanced-ingress
+  namespace: production
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api-service
+                port:
+                  number: 8080
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: health-service
+                port:
+                  number: 8081
+---
+# Item 492: Endpoints (manual, non-service discovery)
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-db
+  namespace: production
+subsets:
+  - addresses:
+      - ip: 192.168.1.100
+    ports:
+      - port: 5432
+---
+# Item 493: EndpointSlice
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: api-service-abcd
+  namespace: production
+endpoints:
+  - addresses:
+      - "10.0.0.1"
+    conditions:
+      ready: true
+ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+---
+# Item 494: Event (resource recording)
+apiVersion: v1
+kind: Event
+metadata:
+  name: pod-created-event
+  namespace: production
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: myapp-pod
+reason: Created
+message: Successfully created pod
+type: Normal
+firstTimestamp: "2024-01-01T00:00:00Z"
+lastTimestamp: "2024-01-01T00:00:00Z"
+count: 1
+---
+# Item 495: PartialObjectMetadata (API object metadata only)
+apiVersion: meta.k8s.io/v1
+kind: PartialObjectMetadata
+metadata:
+  name: sample-pod
+  namespace: production
+  labels:
+    app: sample
+  annotations:
+    description: "Sample pod for metadata extraction"

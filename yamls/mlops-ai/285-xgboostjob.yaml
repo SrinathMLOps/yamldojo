@@ -1,0 +1,22 @@
+# Item 285: XGBoostJob
+apiVersion: kubeflow.org/v1
+kind: XGBoostJob
+metadata:
+  name: xgboost-job
+  namespace: kubeflow
+spec:
+  xgbReplicaSpecs:
+    Master:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: xgboost
+              image: xgboost:latest
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: xgboost
+              image: xgboost:latest

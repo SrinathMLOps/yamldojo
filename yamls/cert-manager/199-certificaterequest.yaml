@@ -1,0 +1,17 @@
+# Item 199: Cert-Manager CertificateRequest
+# CertificateRequest is used internally or directly for manual certificate signing
+apiVersion: cert-manager.io/v1
+kind: CertificateRequest
+metadata:
+  name: manual-cert-request
+  namespace: production
+spec:
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0K...
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  duration: 2160h
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth

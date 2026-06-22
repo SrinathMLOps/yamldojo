@@ -1,0 +1,14 @@
+# Item 299: StressChaos
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: stress-cpu
+  namespace: chaos-testing
+spec:
+  action: stress-cpu
+  mode: fixed-percent
+  value: "50"
+  selector:
+    namespaces:
+      - production
+  duration: 10m

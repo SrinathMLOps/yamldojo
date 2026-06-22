@@ -1,0 +1,15 @@
+# Item 318: Tekton Task
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-image
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: image-name
+      type: string
+  steps:
+    - name: build
+      image: buildah:latest
+      script: |
+        buildah build -t $(params.image-name) .

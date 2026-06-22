@@ -1,0 +1,15 @@
+# Item 238: Probe
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: api-health-check
+  namespace: monitoring
+spec:
+  interval: 30s
+  prober:
+    url: http://blackbox-exporter:9115
+  targets:
+    staticConfig:
+      static:
+        - https://api.example.com/health
+        - https://www.example.com

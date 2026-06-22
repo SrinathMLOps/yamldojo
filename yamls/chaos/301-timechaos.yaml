@@ -1,0 +1,13 @@
+# Item 301: TimeChaos
+apiVersion: chaos-mesh.org/v1alpha1
+kind: TimeChaos
+metadata:
+  name: clock-skew
+  namespace: chaos-testing
+spec:
+  mode: all
+  selector:
+    namespaces:
+      - production
+  timeOffset: "10s"
+  duration: 5m

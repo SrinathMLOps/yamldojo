@@ -1,0 +1,33 @@
+# Item 193: Gateway API - ReferenceGrant
+# ReferenceGrant allows cross-namespace route references
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: ReferenceGrant
+metadata:
+  name: cross-namespace-grant
+  namespace: production
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: ingress
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute
+      namespace: ingress
+  to:
+    - group: ""
+      kind: Service
+      name: api-service
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: ReferenceGrant
+metadata:
+  name: backend-reference-grant
+  namespace: backend-services
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: "*"  # Allow from any namespace
+  to:
+    - group: ""
+      kind: Service

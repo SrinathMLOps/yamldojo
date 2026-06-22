@@ -1,0 +1,31 @@
+# Item 278: RayCluster
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: ray-cluster
+  namespace: ray
+spec:
+  rayVersion: '2.5.0'
+  headGroupSpec:
+    replicas: 1
+    template:
+      spec:
+        containers:
+          - name: ray-head
+            image: rayproject/ray:2.5.0
+            resources:
+              limits:
+                cpu: 2
+                memory: 8Gi
+  workerGroupSpecs:
+    - replicas: 2
+      groupName: worker-group
+      template:
+        spec:
+          containers:
+            - name: ray-worker
+              image: rayproject/ray:2.5.0
+              resources:
+                limits:
+                  cpu: 4
+                  memory: 16Gi

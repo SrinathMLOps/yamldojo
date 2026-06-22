@@ -1,0 +1,17 @@
+# Item 256: Gatekeeper Config
+apiVersion: config.gatekeeper.sh/v1alpha1
+kind: Config
+metadata:
+  name: config
+  namespace: gatekeeper-system
+spec:
+  match:
+    excludedNamespaces: ["gatekeeper-system", "kube-system"]
+    processes: ["audit", "webhook"]
+  readiness:
+    timeout: 3m
+  sync:
+    syncOnly:
+      - group: ""
+        version: "v1"
+        kind: "Pod"

@@ -1,0 +1,51 @@
+# Item 159: EKS Addon
+# Managed add-on for EKS clusters (VPC CNI, CoreDNS, kube-proxy, etc.)
+apiVersion: eks.amazonaws.com/v1alpha1
+kind: Addon
+metadata:
+  name: vpc-cni
+  namespace: eks-addons
+spec:
+  addonName: vpc-cni
+  addonVersion: v1.13.0
+  clusterName: my-cluster
+  serviceAccountRoleArn: arn:aws:iam::ACCOUNT_ID:role/AmazonEKS_CNI_Role
+  # Configuration for the addon
+  configuration:
+    env:
+      - name: ENABLE_PREFIX_DELEGATION
+        value: "true"
+      - name: WARM_PREFIX_TARGET
+        value: "1"
+  # Update strategy for the addon
+  addonUpdateStrategy:
+    maxUnavailable: 1
+    maxUnavailablePercentage: null
+  # Tags
+  tags:
+    Environment: production
+    ManagedService: true
+---
+apiVersion: eks.amazonaws.com/v1alpha1
+kind: Addon
+metadata:
+  name: coredns
+  namespace: eks-addons
+spec:
+  addonName: coredns
+  addonVersion: v1.9.3
+  clusterName: my-cluster
+  addonUpdateStrategy:
+    maxUnavailable: 1
+---
+apiVersion: eks.amazonaws.com/v1alpha1
+kind: Addon
+metadata:
+  name: kube-proxy
+  namespace: eks-addons
+spec:
+  addonName: kube-proxy
+  addonVersion: v1.27.0
+  clusterName: my-cluster
+  addonUpdateStrategy:
+    maxUnavailable: 1

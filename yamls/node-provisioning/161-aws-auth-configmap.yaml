@@ -1,0 +1,40 @@
+# Item 161: AWS Auth ConfigMap
+# aws-auth ConfigMap maps IAM users/roles to Kubernetes RBAC roles
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    # Map node IAM role to system:bootstrappers role
+    - rolearn: arn:aws:iam::ACCOUNT_ID:role/EKSNodeRole
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+    # Map Karpenter node role
+    - rolearn: arn:aws:iam::ACCOUNT_ID:role/KarpenterNodeRole
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+    # Map administrator role
+    - rolearn: arn:aws:iam::ACCOUNT_ID:role/AdminRole
+      username: admin
+      groups:
+        - system:masters
+  mapUsers: |
+    # Map IAM users to Kubernetes RBAC
+    - userarn: arn:aws:iam::ACCOUNT_ID:user/admin-user
+      username: admin-user
+      groups:
+        - system:masters
+    - userarn: arn:aws:iam::ACCOUNT_ID:user/developer-user
+      username: developer-user
+      groups:
+        - developers
+  mapAccounts: |
+    # Map AWS accounts that can assume roles in this cluster
+    - "ACCOUNT_ID"
+    - "CROSS_ACCOUNT_ID"

@@ -1,0 +1,36 @@
+# Item 156: AWSNodeTemplate
+# AWS-specific template for node configuration in EKS
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: default
+  namespace: karpenter
+spec:
+  subnetSelector:
+    karpenter.sh/discovery: "true"
+  securityGroupSelector:
+    karpenter.sh/discovery: "true"
+  tags:
+    Name: karpenter-node
+    ManagedBy: karpenter
+    Environment: production
+  userData: |
+    #!/bin/bash
+    # Custom initialization script
+    echo "Configuring EKS worker node"
+    yum update -y
+  iamInstanceProfile: KarpenterNodeInstanceProfile
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 100Gi
+        volumeType: gp3
+        iops: 3000
+        throughput: 125
+        deleteOnTermination: true
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+  monitoring:
+    enabled: true

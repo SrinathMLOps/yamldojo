@@ -1,0 +1,11 @@
+# Item 245: GrafanaDashboard
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: app-dashboard
+  namespace: monitoring
+spec:
+  datasourceUID: prometheus-uid
+  configMapRef:
+    name: grafana-dashboard-json
+  folderUID: apps

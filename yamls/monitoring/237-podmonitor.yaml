@@ -1,0 +1,13 @@
+# Item 237: PodMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: pod-metrics
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      monitoring: enabled
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s

@@ -1,0 +1,19 @@
+# Item 191: Gateway API - TLSRoute
+# TLSRoute represents a TLS route within a Gateway
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: secure-tcp-route
+  namespace: production
+spec:
+  parentRefs:
+    - name: secure-gateway
+      namespace: production
+      sectionName: tls
+  hostnames:
+    - "*.example.com"
+  rules:
+    - backendRefs:
+        - name: secure-backend-service
+          port: 443
+          weight: 100

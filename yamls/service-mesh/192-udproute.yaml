@@ -1,0 +1,17 @@
+# Item 192: Gateway API - UDPRoute
+# UDPRoute represents a UDP route within a Gateway
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: dns-route
+  namespace: production
+spec:
+  parentRefs:
+    - name: dns-gateway
+      namespace: production
+      sectionName: dns
+  rules:
+    - backendRefs:
+        - name: coredns
+          port: 53
+          weight: 100

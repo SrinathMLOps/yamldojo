@@ -1,0 +1,21 @@
+# Item 187: Linkerd NetworkAuthentication
+# Network-level authentication policy
+apiVersion: policy.linkerd.io/v1alpha1
+kind: NetworkAuthentication
+metadata:
+  name: network-auth-policy
+  namespace: production
+spec:
+  # Subject is the pod/workload being authenticated
+  targetRef:
+    group: ""
+    kind: Pod
+    name: api-service-.*
+  # Networks/sources that are authenticated
+  networks:
+    - cidr: 10.0.0.0/8
+    - cidr: 172.16.0.0/12
+  # Authentication method
+  authenticator:
+    kind: MeshTLSAuthentication
+    name: mtls-strict

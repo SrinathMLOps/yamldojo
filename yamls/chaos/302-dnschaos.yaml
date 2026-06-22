@@ -1,0 +1,17 @@
+# Item 302: DNSChaos
+apiVersion: chaos-mesh.org/v1alpha1
+kind: DNSChaos
+metadata:
+  name: dns-hijack
+  namespace: chaos-testing
+spec:
+  action: hijack
+  mode: all
+  selector:
+    namespaces:
+      - production
+  patterns:
+    - "example.com"
+  hijack:
+    ipAddress: "10.0.0.1"
+  duration: 5m

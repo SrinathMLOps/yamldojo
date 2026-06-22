@@ -1,0 +1,19 @@
+# Item 279: RayJob
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: ray-job-example
+  namespace: ray
+spec:
+  entrypoint: python /home/ray/job_code/script.py
+  runtimeEnv:
+    working_dir: https://github.com/example/ray-jobs/archive/master.zip
+  rayClusterSpec:
+    rayVersion: '2.5.0'
+    headGroupSpec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.5.0

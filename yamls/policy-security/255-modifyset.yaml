@@ -1,0 +1,19 @@
+# Item 255: Gatekeeper ModifySet
+apiVersion: mutations.gatekeeper.sh/v1
+kind: ModifySet
+metadata:
+  name: add-security-context
+spec:
+  applyTo:
+    - groups: [""]
+      kinds: ["Pod"]
+  match:
+    excludedNamespaces: ["kube-system"]
+  parameters:
+    operation: "add"
+    pathTests:
+      - test: "spec.securityContext"
+    values:
+      fromList:
+        - "runAsNonRoot: true"
+        - "fsReadOnlyRootFilesystem: true"

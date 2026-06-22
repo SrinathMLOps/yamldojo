@@ -1,0 +1,16 @@
+# Item 157: ENIConfig
+# Elastic Network Interface configuration for advanced networking in EKS
+apiVersion: crd.k8s.amazonaws.com/v1alpha1
+kind: ENIConfig
+metadata:
+  name: subnet-az1
+spec:
+  # Subnet ID in a specific availability zone
+  subnet: subnet-12345678
+  # Security groups for the ENI
+  securityGroups:
+    - sg-12345678
+  # Tags to apply to ENIs created in this configuration
+  tags:
+    Name: eni-az1
+    Environment: production

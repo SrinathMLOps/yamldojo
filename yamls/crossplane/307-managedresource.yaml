@@ -1,0 +1,12 @@
+# Item 307: Crossplane ManagedResource
+apiVersion: s3.aws.crossplane.io/v1
+kind: Bucket
+metadata:
+  name: my-managed-bucket
+spec:
+  forProvider:
+    region: us-east-1
+    acl: private
+  providerConfigRef:
+    name: aws-provider
+  deletionPolicy: Delete

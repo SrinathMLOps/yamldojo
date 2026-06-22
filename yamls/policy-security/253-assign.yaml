@@ -1,0 +1,16 @@
+# Item 253: Gatekeeper Assign
+apiVersion: mutations.gatekeeper.sh/v1
+kind: Assign
+metadata:
+  name: add-app-label
+spec:
+  applyTo:
+    - groups: [""]
+      kinds: ["Pod"]
+      versions: ["v1"]
+  match:
+    excludedNamespaces: ["kube-system"]
+  location: "metadata.labels.app"
+  parameters:
+    assign:
+      value: "unknown"

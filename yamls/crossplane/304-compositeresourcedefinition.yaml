@@ -1,0 +1,26 @@
+# Item 304: Crossplane CompositeResourceDefinition
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresqls.database.example.com
+spec:
+  group: database.example.com
+  names:
+    kind: XPostgreSQL
+    plural: xpostgresqls
+  claimNames:
+    kind: PostgreSQL
+    plural: postgresqls
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                storageGB:
+                  type: integer

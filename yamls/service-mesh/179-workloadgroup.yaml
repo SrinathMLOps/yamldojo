@@ -1,0 +1,26 @@
+# Item 179: Istio WorkloadGroup
+# WorkloadGroup represents a collection of workload instances
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: external-services-group
+  namespace: production
+spec:
+  template:
+    ports:
+      http: 8080
+      metrics: 9090
+    labels:
+      app: external-service
+      version: v1
+      tier: backend
+    weight: 100
+    locality: us-west/us-west-2a
+  metadata:
+    labels:
+      owner: ops-team
+      environment: production
+  detection:
+    probeEndpoint: ":8080/healthz"
+    timeout: 5s
+    initialDelay: 10s

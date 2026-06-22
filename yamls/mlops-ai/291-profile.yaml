@@ -1,0 +1,13 @@
+# Item 291: Profile (Kubeflow)
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: ml-team
+spec:
+  owner:
+    kind: User
+    name: user@example.com
+  resourceQuotaSpec:
+    hard:
+      cpu: "10"
+      memory: 20Gi

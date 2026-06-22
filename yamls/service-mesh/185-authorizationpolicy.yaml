@@ -1,0 +1,35 @@
+# Item 185: Linkerd AuthorizationPolicy
+# Authorization policy for mesh-wide access control
+apiVersion: policy.linkerd.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: production
+spec:
+  targetRef:
+    group: policy.linkerd.io
+    kind: Server
+    name: api-server
+  rules: []  # Empty rules mean deny all
+---
+apiVersion: policy.linkerd.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-web-to-api
+  namespace: production
+spec:
+  targetRef:
+    group: policy.linkerd.io
+    kind: Server
+    name: api-server
+  rules:
+    - from:
+        - principalSet: "web-service"
+      to:
+        - method: GET
+          paths: ["/api/*"]
+    - from:
+        - principalSet: "admin-service"
+      to:
+        - method: "*"
+          paths: ["/*"]

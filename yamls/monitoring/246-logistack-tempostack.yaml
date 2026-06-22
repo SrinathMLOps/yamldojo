@@ -1,0 +1,29 @@
+# Item 246: LokiStack and TempoStack
+apiVersion: loki.grafana.com/v1
+kind: LokiStack
+metadata:
+  name: loki-stack
+  namespace: monitoring
+spec:
+  size: 1x.small
+  storage:
+    schemas:
+      - version: v12
+        from: 2022-06-06
+        store: boltdb-shipper
+        object_store: filesystem
+        index:
+          prefix: index_
+          period: 24h
+    filesystem: {}
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempo-stack
+  namespace: monitoring
+spec:
+  size: 1x.small
+  storage:
+    traces:
+      backend: filesystem

@@ -1,0 +1,10 @@
+# Item 269: VolumeAttributesClass
+apiVersion: storage.k8s.io/v1alpha1
+kind: VolumeAttributesClass
+metadata:
+  name: encrypted-storage
+spec:
+  driverName: ebs.csi.aws.com
+  parameters:
+    encrypted: "true"
+    kmsKeyId: arn:aws:kms:us-east-1:ACCOUNT:key/12345678

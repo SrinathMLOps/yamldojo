@@ -1,0 +1,28 @@
+# Item 217: Argo Workflows - WorkflowTemplate
+# WorkflowTemplate is a reusable workflow template
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-and-test-template
+  namespace: argo
+spec:
+  entrypoint: build-and-test
+  templates:
+    - name: build-and-test
+      dag:
+        tasks:
+          - name: build
+            template: build-step
+          - name: test
+            template: test-step
+            dependencies: build
+    - name: build-step
+      container:
+        image: node:16
+        command: [sh, -c]
+        args: ['npm install && npm run build']
+    - name: test-step
+      container:
+        image: node:16
+        command: [sh, -c]
+        args: ['npm test']

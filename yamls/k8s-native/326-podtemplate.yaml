@@ -1,0 +1,16 @@
+# Item 326: PodTemplate
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: app-pod-template
+  namespace: production
+template:
+  metadata:
+    labels:
+      app: myapp
+  spec:
+    containers:
+      - name: app
+        image: myapp:v1.0
+        ports:
+          - containerPort: 8080

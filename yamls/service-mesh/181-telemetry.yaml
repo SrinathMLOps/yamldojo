@@ -1,0 +1,38 @@
+# Item 181: Istio Telemetry
+# Telemetry resource for configuring metrics, tracing, and logging
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: custom-telemetry
+  namespace: production
+spec:
+  # Metrics configuration
+  metrics:
+    - providers:
+        - name: prometheus
+      dimensions:
+        - source_workload_namespace
+        - destination_workload_namespace
+        - response_code
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+          dimensions:
+            - request_path
+            - response_code
+  # Tracing configuration
+  tracing:
+    - providers:
+        - name: jaeger
+      randomSamplingPercentage: 100
+      customTags:
+        headers:
+          X-Custom-Tag:
+            header:
+              name: X-Custom-Header
+              defaultValue: "default"
+  # Logging configuration
+  logging:
+    - providers:
+        - name: stackdriver
+      level: WARN

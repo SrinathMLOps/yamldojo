@@ -1,0 +1,18 @@
+# Item 162: SecurityGroupPolicy
+# Policy for managing security groups on pods (VPC CNI)
+apiVersion: ec2.k8s.amazonaws.com/v1alpha1
+kind: SecurityGroupPolicy
+metadata:
+  name: allow-ingress-from-namespaces
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: web-service
+  securityGroupIngress:
+    - description: "Allow ingress from other namespaces"
+      groupId: sg-12345678
+  securityGroupEgress:
+    - description: "Allow all egress"
+      groupId: sg-87654321
+      cidrIp: 0.0.0.0/0

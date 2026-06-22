@@ -1,0 +1,16 @@
+# Item 183: Linkerd Server
+# Linkerd Server defines traffic policy for inbound traffic
+apiVersion: policy.linkerd.io/v1beta1
+kind: Server
+metadata:
+  name: api-server
+  namespace: production
+  labels:
+    app: api
+spec:
+  port: 8080
+  protocol: HTTP
+  selector:
+    matchLabels:
+      app: api-service
+  proxyProtocol: HTTP/1

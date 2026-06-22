@@ -1,0 +1,12 @@
+# Item 289: TrainedModel (ModelMesh)
+apiVersion: serving.kserve.io/v1alpha1
+kind: TrainedModel
+metadata:
+  name: my-model
+  namespace: kserve-inference-system
+spec:
+  model:
+    modelFormat:
+      name: sklearn
+    storageUri: s3://bucket/models/my-model
+  predictorName: sklearn-predictor

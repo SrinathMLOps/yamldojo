@@ -1,0 +1,19 @@
+# Item 320: Tekton Pipeline
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+  namespace: tekton-pipelines
+spec:
+  tasks:
+    - name: build
+      taskRef:
+        name: build-image
+      params:
+        - name: image-name
+          value: my-app:latest
+    - name: deploy
+      runAfter:
+        - build
+      taskRef:
+        name: deploy-cluster

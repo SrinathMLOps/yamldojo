@@ -1,0 +1,35 @@
+# Item 158: Fargate Profile
+# AWS Fargate profile for running pods without managing underlying infrastructure
+apiVersion: eks.amazonaws.com/v1alpha1
+kind: FargateProfile
+metadata:
+  name: fargate-profile-production
+  namespace: eks
+spec:
+  clusterName: my-cluster
+  executionRoleArn: arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole
+  podExecutionRoleArn: arn:aws:iam::ACCOUNT_ID:role/FargatePodExecutionRole
+  # Selectors determine which pods run on Fargate
+  selectors:
+    - namespace: production
+      labels:
+        workload: serverless
+    - namespace: monitoring
+      labels:
+        component: observability
+  # Subnets where Fargate pods will run
+  subnets:
+    - subnet-12345678
+    - subnet-87654321
+  # Security groups for Fargate ENIs
+  securityGroups:
+    - sg-12345678
+  # Tags for the Fargate profile
+  tags:
+    Environment: production
+    ManagedBy: terraform
+  # Enable logging
+  logging:
+    clusterLogging:
+      - logDriver: awslogs
+        enabled: true

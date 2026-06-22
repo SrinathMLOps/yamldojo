@@ -1,0 +1,16 @@
+# Item 186: Linkerd MeshTLSAuthentication
+# Mutual TLS authentication configuration
+apiVersion: policy.linkerd.io/v1alpha1
+kind: MeshTLSAuthentication
+metadata:
+  name: mtls-strict
+  namespace: production
+spec:
+  identityRefs:
+    - name: web-service
+      kind: ServiceAccount
+      namespace: production
+  identities:
+    - "web-service.production.serviceaccount.identity.linkerd.cluster.local"
+    - "api-service.production.serviceaccount.identity.linkerd.cluster.local"
+  requireIdentity: true

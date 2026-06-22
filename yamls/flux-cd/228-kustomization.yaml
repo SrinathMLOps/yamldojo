@@ -1,0 +1,28 @@
+# Item 228: Flux - Kustomization
+# Kustomization reconciles Kustomize overlays
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: app-kustomization
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: ./kustomize/overlays/production
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: app-repository
+  postBuild:
+    substitute:
+      cluster: production
+      environment: prod
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-config
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: app-backend
+      namespace: production
+  timeout: 2m
+  retryInterval: 30s

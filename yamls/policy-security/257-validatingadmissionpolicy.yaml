@@ -1,0 +1,16 @@
+# Item 257: ValidatingAdmissionPolicy (native K8s)
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: pod-security-policy
+spec:
+  failurePolicy: fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: "object.spec.securityContext.runAsNonRoot == true"
+      message: "Pods must run as non-root"

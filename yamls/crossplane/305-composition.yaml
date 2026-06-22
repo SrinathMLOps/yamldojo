@@ -1,0 +1,21 @@
+# Item 305: Crossplane Composition
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgresql-aws
+spec:
+  compositeTypeRef:
+    apiVersion: database.example.com/v1alpha1
+    kind: XPostgreSQL
+  resources:
+    - name: rds-instance
+      base:
+        apiVersion: rds.aws.crossplane.io/v1alpha1
+        kind: DBInstance
+        metadata:
+          name: postgresql-db
+        spec:
+          deletionPolicy: Delete
+      patches:
+        - fromFieldPath: spec.storageGB
+          toFieldPath: spec.forProvider.allocatedStorage

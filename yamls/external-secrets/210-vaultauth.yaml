@@ -1,0 +1,16 @@
+# Item 210: Vault Auth
+# VaultAuth configures authentication to Vault
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: vault-auth
+  namespace: production
+spec:
+  vaultConnectionRef: vault-connection
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: my-app-role
+    serviceAccount: default
+  headers:
+    X-Custom-Header: "custom-value"

@@ -1,0 +1,19 @@
+# Item 277: CephObjectStore
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: rook-ceph-store
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    failureDomain: host
+    replicated:
+      size: 3
+  dataPool:
+    failureDomain: host
+    replicated:
+      size: 3
+  preservePoolOnDelete: true
+  gateway:
+    port: 80
+    instances: 1

@@ -1,0 +1,13 @@
+# Item 314: Knative Configuration
+apiVersion: serving.knative.dev/v1
+kind: Configuration
+metadata:
+  name: hello-world-config
+  namespace: production
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/knative-samples/hello
+          ports:
+            - containerPort: 8080

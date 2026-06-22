@@ -1,0 +1,38 @@
+# Item 212: Argo CD - Application
+# Application manages deployment of a specified Helm chart or kustomization
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: production-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/example/app-repo.git
+    path: deploy/production
+    targetRevision: main
+    helm:
+      releaseName: production-app
+      values: |
+        replicaCount: 3
+        image:
+          repository: myapp
+          tag: v1.0.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

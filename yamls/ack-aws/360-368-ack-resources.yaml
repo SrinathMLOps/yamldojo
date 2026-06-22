@@ -1,0 +1,146 @@
+# Items 360-368: AWS Controllers for Kubernetes (ACK)
+
+# Item 360: S3 Bucket
+apiVersion: s3.services.k8s.aws/v1alpha1
+kind: Bucket
+metadata:
+  name: my-app-bucket
+  namespace: production
+spec:
+  bucket: my-app-data-bucket
+  createBucketConfiguration:
+    locationConstraint: us-east-1
+  versioningConfiguration:
+    status: Enabled
+  serverSideEncryptionConfiguration:
+    rules:
+      - applyServerSideEncryptionByDefault:
+          sseAlgorithm: AES256
+
+---
+# Item 361: DynamoDB Table
+apiVersion: dynamodb.services.k8s.aws/v1alpha1
+kind: Table
+metadata:
+  name: app-table
+  namespace: production
+spec:
+  tableName: app-data
+  billingMode: PAY_PER_REQUEST
+  attributeDefinitions:
+    - attributeName: id
+      attributeType: "S"
+  keySchema:
+    - attributeName: id
+      keyType: HASH
+
+---
+# Item 362: RDS DBInstance
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: mysql-db
+  namespace: production
+spec:
+  allocatedStorage: 20
+  dbInstanceClass: db.t2.micro
+  dbInstanceIdentifier: my-mysql-db
+  engine: mysql
+  masterUsername: admin
+  masterUserPassword:
+    name: db-secret
+    key: password
+
+---
+# Item 363: ECR Repository
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: my-app-repo
+  namespace: production
+spec:
+  repositoryName: my-app
+  encryptionConfiguration:
+    encryptionType: AES256
+
+---
+# Item 364: IAM Role
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: app-role
+  namespace: production
+spec:
+  roleName: my-app-role
+  assumeRolePolicyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "lambda.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    }
+
+---
+# Item 365: IAM Policy
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: app-policy
+  namespace: production
+spec:
+  policyName: my-app-policy
+  policyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": "s3:*",
+          "Resource": "arn:aws:s3:::my-app-bucket/*"
+        }
+      ]
+    }
+
+---
+# Item 366: Lambda Function
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: my-function
+  namespace: production
+spec:
+  functionName: my-function
+  code:
+    zipFile: UEsDBAoAAAAAAFt...
+  handler: index.handler
+  role: arn:aws:iam::ACCOUNT_ID:role/my-app-role
+  runtime: python3.9
+
+---
+# Item 367: SNS Topic
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Topic
+metadata:
+  name: app-notifications
+  namespace: production
+spec:
+  topicName: my-app-topic
+  displayName: My Application Notifications
+
+---
+# Item 368: SQS Queue
+apiVersion: sqs.services.k8s.aws/v1alpha1
+kind: Queue
+metadata:
+  name: app-jobs
+  namespace: production
+spec:
+  queueName: my-app-jobs
+  visibilityTimeout: 300
+  messageRetentionPeriod: 1209600

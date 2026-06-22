@@ -1,0 +1,17 @@
+# Item 288: ClusterServingRuntime (KServe)
+apiVersion: serving.kserve.io/v1alpha1
+kind: ClusterServingRuntime
+metadata:
+  name: tf-runtime
+spec:
+  supportedModelFormats:
+    - name: tensorflow
+      version: "2"
+      autoSelect: true
+  containers:
+    - name: kserve-container
+      image: kserve/tfserving:latest
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http1

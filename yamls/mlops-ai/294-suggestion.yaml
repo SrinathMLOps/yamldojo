@@ -1,0 +1,11 @@
+# Item 294: Suggestion (Katib)
+apiVersion: "kubeflow.org/v1alpha3"
+kind: Suggestion
+metadata:
+  name: random-suggestion
+  namespace: kubeflow
+spec:
+  requests: 3
+  algorithm:
+    algorithmName: random
+  experimentName: random-example

@@ -1,0 +1,10 @@
+# Item 313: Knative Revision
+apiVersion: serving.knative.dev/v1
+kind: Revision
+metadata:
+  name: hello-world-00001
+  namespace: production
+spec:
+  containerConcurrency: 100
+  timeoutSeconds: 300
+  serviceAccountName: default

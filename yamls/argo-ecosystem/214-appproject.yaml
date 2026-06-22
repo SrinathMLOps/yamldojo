@@ -1,0 +1,33 @@
+# Item 214: Argo CD - AppProject
+# AppProject controls which repositories and clusters applications can use
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production-project
+  namespace: argocd
+spec:
+  sourceRepos:
+    - 'https://github.com/example/app-repo.git'
+    - 'https://charts.example.com'
+  destinations:
+    - server: 'https://kubernetes.default.svc'
+      namespace: 'production'
+      name: 'in-cluster'
+    - server: 'https://staging-cluster.example.com'
+      namespace: '*'
+      name: 'staging'
+  clusterResourceBlacklist:
+    - group: '*'
+      kind: ResourceQuota
+    - group: '*'
+      kind: LimitRange
+  namespaceResourceBlacklist:
+    - group: '*'
+      kind: NetworkPolicy
+  roles:
+    - name: developers
+      policies:
+        - p, proj:production-project:developers, applications, get, production-project/*, allow
+        - p, proj:production-project:developers, applications, sync, production-project/*, allow
+      jwtTokens:
+        - iat: 1535390316

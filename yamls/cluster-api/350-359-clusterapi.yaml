@@ -1,0 +1,166 @@
+# Items 350-359: Cluster API Resources
+
+# Item 350: Cluster
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: my-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.96.0.0/12"]
+    pods:
+      cidrBlocks: ["10.244.0.0/16"]
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: my-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AWSCluster
+    name: my-aws-cluster
+
+---
+# Item 351: AWSCluster
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSCluster
+metadata:
+  name: my-aws-cluster
+  namespace: default
+spec:
+  region: us-east-1
+  sshKeyName: my-key
+  controlPlaneEndpoint:
+    host: ""
+    port: 6443
+  networkSpec:
+    cidr: 10.0.0.0/16
+    subnets:
+      private:
+        - id: subnet-private-1
+        - id: subnet-private-2
+
+---
+# Item 352: AzureCluster
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureCluster
+metadata:
+  name: my-azure-cluster
+  namespace: default
+spec:
+  location: eastus
+  resourceGroup: my-resource-group
+  subscriptionID: "12345678"
+  vnetName: my-vnet
+  networkSpec:
+    cidr: 10.0.0.0/16
+
+---
+# Item 353: GCPCluster
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPCluster
+metadata:
+  name: my-gcp-cluster
+  namespace: default
+spec:
+  project: my-gcp-project
+  region: us-central1
+  network:
+    name: my-network
+
+---
+# Item 354: DockerCluster
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: my-docker-cluster
+  namespace: default
+spec:
+  loadBalancer:
+    imageRepository: kindest
+    imageTag: v0.14.0
+
+---
+# Item 355: KubeadmControlPlane
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: my-control-plane
+  namespace: default
+spec:
+  replicas: 3
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AWSMachineTemplate
+      name: my-control-plane-machine-template
+  kubeadmConfigSpec:
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,memory.available<0%
+
+---
+# Item 356: KubeadmConfigTemplate
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: my-kubeadm-config-template
+  namespace: default
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,memory.available<0%
+
+---
+# Item 357: AWSMachineTemplate
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSMachineTemplate
+metadata:
+  name: my-machine-template
+  namespace: default
+spec:
+  template:
+    spec:
+      iamInstanceProfile: "nodes.cluster-api-provider-aws.sigs.k8s.io"
+      instanceType: t3.medium
+      sshKeyName: my-key
+      tags:
+        sigs.k8s.io/cluster-api-provider-aws/cluster/my-cluster: owned
+
+---
+# Item 358: AzureMachineTemplate
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureMachineTemplate
+metadata:
+  name: my-azure-machine-template
+  namespace: default
+spec:
+  template:
+    spec:
+      location: eastus
+      vmSize: Standard_B2s
+      image:
+        marketplace:
+          publisher: Canonical
+          offer: 0001-com-ubuntu-server-focal
+          sku: 20_04-lts-gen2
+          version: latest
+
+---
+# Item 359: GCPMachineTemplate
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPMachineTemplate
+metadata:
+  name: my-gcp-machine-template
+  namespace: default
+spec:
+  template:
+    spec:
+      machineType: n1-standard-2
+      image: projects/ubuntu-os-cloud/global/images/ubuntu-2004-lts-v20220101
+      zone: us-central1-a

@@ -1,0 +1,31 @@
+# Item 178: Istio WorkloadEntry
+# WorkloadEntry represents a single instance outside the mesh
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: external-database
+  namespace: production
+spec:
+  address: "db.example.com"
+  ports:
+    postgres: 5432
+    metrics: 9090
+  labels:
+    app: external-db
+    version: v1
+  weight: 100
+  locality: us-west/us-west-2a
+---
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: on-prem-service
+  namespace: production
+spec:
+  address: "192.168.1.100"
+  ports:
+    http: 8080
+    https: 8443
+  labels:
+    app: legacy-service
+    tier: backend

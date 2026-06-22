@@ -1,0 +1,13 @@
+# Item 264: Velero BackupStorageLocation
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: aws-s3
+  namespace: velero
+spec:
+  provider: aws
+  bucket: velero-backups
+  prefix: kubernetes
+  config:
+    region: us-east-1
+    s3url: https://s3.us-east-1.amazonaws.com
