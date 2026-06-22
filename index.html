@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>kubectl practice — YAML dojo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<style>
+:root{
+  --bg:#0a0e14;
+  --panel:#10151d;
+  --panel-2:#0d1219;
+  --border:#1f2733;
+  --border-soft:#182030;
+  --accent:#326CE5;
+  --accent-soft:rgba(50,108,229,0.14);
+  --accent-bright:#6E9CF5;
+  --good:#3FB950;
+  --good-soft:rgba(63,185,80,0.14);
+  --bad:#F85149;
+  --bad-soft:rgba(248,81,73,0.14);
+  --warn:#D29922;
+  --warn-soft:rgba(210,153,34,0.14);
+  --text:#E6EDF3;
+  --text-dim:#8B949E;
+  --text-faint:#5B6573;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);height:100%;}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+/* ---------- header ---------- */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,#0d1219,#0a0e14);
+  flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:7px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:700;font-size:14px;color:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset, 0 4px 14px rgba(50,108,229,0.35);
+}
+.brand-text h1{font-size:14.5px;margin:0;font-weight:600;letter-spacing:0.2px;}
+.brand-text p{margin:0;font-size:11.5px;color:var(--text-dim);font-family:var(--mono);}
+.status-pill{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:12px;color:var(--text-dim);
+  padding:6px 12px;border:1px solid var(--border);border-radius:20px;background:var(--panel-2);
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-soft);animation:pulse 2.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+.status-pill b{color:var(--text);font-weight:600;}
+
+/* ---------- layout ---------- */
+.shell{flex:1;display:flex;min-height:0;}
+
+/* sidebar */
+.sidebar-col{
+  width:240px;flex-shrink:0;border-right:1px solid var(--border);
+  background:var(--panel-2);display:flex;flex-direction:column;min-height:0;
+}
+.sidebar-search{padding:12px 14px 8px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
+.sidebar-search input{
+  width:100%;background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 9px;outline:none;
+}
+.sidebar-search input:focus{border-color:var(--accent);}
+.search-empty{margin-top:8px;font-size:11.5px;color:var(--text-dim);font-family:var(--sans);line-height:1.45;padding:0 2px;display:none;}
+.search-empty.show{display:block;}
+.search-empty b{color:var(--accent-bright);font-family:var(--mono);font-weight:600;}
+.sidebar{
+  flex:1;overflow-y:auto;padding:6px 0 30px;min-height:0;
+}
+.sidebar-group{margin-bottom:4px;}
+.sidebar-label{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-faint);padding:14px 16px 6px;
+}
+.res-item{
+  display:flex;align-items:center;gap:9px;padding:7px 16px;cursor:pointer;
+  font-family:var(--mono);font-size:12.5px;color:var(--text-dim);
+  border-left:2px solid transparent;transition:background .12s,color .12s;
+  white-space:nowrap;
+}
+.res-item:hover{background:rgba(255,255,255,0.03);color:var(--text);}
+.res-item.active{background:var(--accent-soft);color:var(--accent-bright);border-left-color:var(--accent);font-weight:600;}
+.res-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.res-check{margin-left:auto;font-size:11px;color:var(--good);opacity:0;}
+.res-item.done .res-check{opacity:1;}
+
+/* panels */
+.panels{flex:1;display:flex;min-width:0;}
+.panel{flex:1;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--border);}
+.panel:last-child{border-right:none;}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 16px;border-bottom:1px solid var(--border);background:var(--panel);
+  flex-shrink:0;
+}
+.panel-title{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);font-family:var(--mono);}
+.panel-title .kind-name{color:var(--text);font-weight:600;}
+.btn{
+  font-family:var(--mono);font-size:11.5px;color:var(--text);background:var(--panel-2);
+  border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-bright);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.btn.primary:hover{background:var(--accent-bright);border-color:var(--accent-bright);color:#fff;}
+.btn:disabled{opacity:.4;cursor:default;}
+.btn:disabled:hover{border-color:var(--border);color:var(--text);}
+
+.panel-body{flex:1;position:relative;min-height:0;}
+.panel-body .CodeMirror{height:100%;font-family:var(--mono);font-size:13px;line-height:1.55;}
+
+/* reference panel cover (practice-mode blur) */
+.cover{
+  position:absolute;inset:0;background:rgba(10,14,20,0.92);backdrop-filter:blur(3px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  text-align:center;padding:20px;z-index:5;
+}
+.cover.hidden{display:none;}
+.cover p{margin:0;color:var(--text-dim);font-size:12.5px;max-width:280px;}
+
+/* note strip under reference head */
+.note-strip{
+  padding:8px 16px;font-size:12px;color:var(--text-dim);background:var(--panel-2);
+  border-bottom:1px solid var(--border-soft);font-family:var(--sans);
+}
+.note-strip code{font-family:var(--mono);color:var(--accent-bright);background:rgba(50,108,229,0.1);padding:1px 5px;border-radius:4px;}
+
+/* lint drawer */
+.lint-drawer{
+  border-top:1px solid var(--border);background:var(--panel-2);flex-shrink:0;
+  max-height:42%;overflow-y:auto;
+}
+.lint-summary{
+  display:flex;align-items:center;justify-content:space-between;padding:9px 16px;
+  font-family:var(--mono);font-size:12px;border-bottom:1px solid var(--border-soft);
+}
+.lint-summary .counts{display:flex;gap:14px;color:var(--text-dim);}
+.lint-summary .counts span{display:flex;align-items:center;gap:5px;}
+.dot-sm{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.lint-list{list-style:none;margin:0;padding:6px 0;}
+.lint-row{
+  display:flex;gap:9px;align-items:flex-start;padding:7px 16px;font-size:12px;
+  font-family:var(--mono);border-bottom:1px solid rgba(255,255,255,0.02);
+}
+.lint-icon{flex-shrink:0;width:14px;text-align:center;margin-top:1px;}
+.lint-row.ok .lint-icon{color:var(--good);}
+.lint-row.err .lint-icon{color:var(--bad);}
+.lint-row.warn .lint-icon{color:var(--warn);}
+.lint-row .msg{color:var(--text-dim);}
+.lint-row.ok .msg{color:var(--text);}
+.lint-row .loc{color:var(--text-faint);margin-left:auto;flex-shrink:0;padding-left:10px;}
+.lint-empty{padding:18px 16px;color:var(--text-faint);font-size:12px;font-family:var(--mono);}
+
+/* AI generation */
+.key-status{margin-top:7px;font-size:10.5px;color:var(--text-faint);font-family:var(--mono);}
+.key-status a{color:var(--accent-bright);cursor:pointer;text-decoration:none;margin-left:6px;}
+.key-status a:hover{text-decoration:underline;}
+.ai-gen-row{margin-top:10px;}
+.ai-btn{background:linear-gradient(135deg,#A371F7,#FF5FA2);border:none;color:#fff;font-weight:600;width:100%;padding:7px 10px;}
+.ai-btn:hover{filter:brightness(1.12);color:#fff;border:none;}
+.ai-btn:disabled{opacity:.55;filter:none;cursor:default;}
+.ai-gen-hint{margin-top:7px;font-size:10.5px;color:var(--text-faint);line-height:1.45;}
+.ai-gen-or{margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft);font-size:11.5px;color:var(--text-dim);line-height:1.45;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(5,8,12,0.72);display:none;align-items:center;justify-content:center;z-index:60;}
+.modal-overlay.show{display:flex;}
+.modal-card{width:340px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,0.55);}
+.modal-card h3{margin:0 0 8px;font-size:14px;color:var(--text);font-family:var(--sans);}
+.modal-card p{margin:0 0 14px;font-size:12px;color:var(--text-dim);line-height:1.55;}
+.modal-card p code{font-family:var(--mono);color:var(--accent-bright);background:rgba(50,108,229,0.1);padding:1px 5px;border-radius:4px;}
+.modal-card input{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12.5px;padding:9px 10px;outline:none;margin-bottom:14px;}
+.modal-card input:focus{border-color:var(--accent);}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;}
+
+/* responsive */
+@media (max-width: 900px){
+  .sidebar{width:170px;}
+  .panels{flex-direction:column;}
+  .panel{border-right:none;border-bottom:1px solid var(--border);}
+}
+
+/* CodeMirror tweaks to match palette */
+.CodeMirror{background:var(--panel) !important;color:var(--text) !important;}
+.CodeMirror-gutters{background:var(--panel) !important;border-right:1px solid var(--border-soft) !important;}
+.CodeMirror-linenumber{color:var(--text-faint) !important;}
+.CodeMirror-cursor{border-left:1.5px solid var(--accent-bright) !important;}
+.cm-s-default .cm-string{color:#9CDCFE;}
+.cm-s-default .cm-atom{color:var(--accent-bright);}
+.cm-s-default .cm-number{color:#D29922;}
+.cm-s-default .cm-comment{color:var(--text-faint);}
+.CodeMirror-activeline-background{background:rgba(255,255,255,0.025) !important;}
+.CodeMirror-focused .CodeMirror-selected{background:rgba(50,108,229,0.25) !important;}
+.cm-tab-fail{background:rgba(248,81,73,0.25);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">K8s</div>
+    <div class="brand-text">
+      <h1>YAML Dojo</h1>
+      <p>kubectl apply --dry-run=client practice bench</p>
+    </div>
+  </div>
+  <div class="status-pill">
+    <span class="status-dot"></span>
+    <span><b id="progressCount">0</b>/<span id="progressTotal">0</span> manifests validated this session</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ===== Sidebar: resource picker ===== -->
+  <div class="sidebar-col">
+    <div class="sidebar-search">
+      <input id="resourceSearch" type="text" placeholder="Find a resource… e.g. lease" autocomplete="off" />
+      <div class="key-status" id="keyStatus">no API key set yet</div>
+      <div class="search-empty" id="searchEmpty"></div>
+    </div>
+    <nav class="sidebar" id="sidebar"></nav>
+  </div>
+
+  <!-- ===== Panels ===== -->
+  <div class="panels">
+
+    <!-- Reference panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">📘 Reference &nbsp;<span class="kind-name" id="refKindLabel">—</span></div>
+        <button class="btn" id="toggleCoverBtn">Hide answer</button>
+      </div>
+      <div class="note-strip" id="refNote">Pick a resource on the left to see a complete, valid example.</div>
+      <div class="panel-body">
+        <textarea id="referenceArea"></textarea>
+        <div class="cover" id="refCover">
+          <div style="font-size:22px;">🙈</div>
+          <p>Reference hidden. Try writing the manifest from memory in the right panel, then click <b>Show answer</b> to compare.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">⌨️ Your practice file</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="resetBtn">Reset</button>
+          <button class="btn primary" id="validateBtn">Validate</button>
+        </div>
+      </div>
+      <div class="note-strip" id="practiceNote">Type your manifest here. Validation runs automatically as you type.</div>
+      <div class="panel-body">
+        <textarea id="practiceArea"></textarea>
+      </div>
+      <div class="lint-drawer">
+        <div class="lint-summary">
+          <span>LINT RESULTS</span>
+          <span class="counts">
+            <span><span class="dot-sm" style="background:var(--good)"></span><span id="cOk">0</span> passed</span>
+            <span><span class="dot-sm" style="background:var(--warn)"></span><span id="cWarn">0</span> warnings</span>
+            <span><span class="dot-sm" style="background:var(--bad)"></span><span id="cErr">0</span> errors</span>
+          </span>
+        </div>
+        <ul class="lint-list" id="lintList"><div class="lint-empty">Start typing — checks appear here.</div></ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== API key modal (only shown when the person clicks "Generate with Claude") ===== -->
+<div class="modal-overlay" id="keyModalOverlay">
+  <div class="modal-card">
+    <h3>Anthropic API key</h3>
+    <p>Used only to call <code>api.anthropic.com</code> directly from this browser tab, for this session. Never saved to disk, never sent anywhere else, and cleared when you close or reload this page.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" />
+    <div class="modal-actions">
+      <button class="btn" id="keyModalCancel">Cancel</button>
+      <button class="btn primary" id="keyModalSave">Use this key</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script>
+/* ============================================================
+   RESOURCE LIBRARY — complete, realistic example manifests
+   ============================================================ */
+const CATEGORIES = [
+  {id:"workloads", label:"Workloads", color:"#326CE5"},
+  {id:"network", label:"Service & Networking", color:"#A371F7"},
+  {id:"config", label:"Config & Storage", color:"#D29922"},
+  {id:"rbac", label:"Cluster & RBAC", color:"#F85149"},
+  {id:"policy", label:"Scaling & Policy", color:"#3FB950"},
+  {id:"extend", label:"Extensibility", color:"#2DD4BF"},
+  {id:"cloud", label:"Cloud Provisioning (not core k8s)", color:"#FF8A4C"},
+  {id:"ai", label:"✨ AI-generated (this session)", color:"#FF5FA2"},
+];
+
+let RESOURCES = [
+{id:"pod",kind:"Pod",api:"v1",cat:"workloads",note:"The smallest deployable unit — one or more containers sharing network and storage.",
+yaml:`apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: default
+  labels:
+    app: nginx
+    tier: frontend
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      ports:
+        - containerPort: 80
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "250m"
+          memory: "256Mi"
+      env:
+        - name: ENVIRONMENT
+          value: "production"
+      volumeMounts:
+        - name: cache-volume
+          mountPath: /tmp/cache
+  volumes:
+    - name: cache-volume
+      emptyDir: {}
+  restartPolicy: Always
+`,
+required:["spec.containers"]},
+
+{id:"deployment",kind:"Deployment",api:"apps/v1",cat:"workloads",note:"Manages replicas of a Pod template and rolls out updates declaratively.",
+yaml:`apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+`,
+required:["spec.replicas","spec.selector.matchLabels","spec.template.spec.containers"]},
+
+{id:"replicaset",kind:"ReplicaSet",api:"apps/v1",cat:"workloads",note:"Keeps a stable number of identical Pods running — usually managed for you by a Deployment.",
+yaml:`apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+`,
+required:["spec.selector.matchLabels","spec.template.spec.containers"]},
+
+{id:"statefulset",kind:"StatefulSet",api:"apps/v1",cat:"workloads",note:"Like a Deployment, but gives each Pod a stable identity and its own persistent storage.",
+yaml:`apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  serviceName: web
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: registry.k8s.io/nginx-slim:0.8
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+`,
+required:["spec.serviceName","spec.selector.matchLabels","spec.template.spec.containers"]},
+
+{id:"daemonset",kind:"DaemonSet",api:"apps/v1",cat:"workloads",note:"Runs exactly one copy of a Pod on every (or every matching) node in the cluster.",
+yaml:`apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-agent
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+      containers:
+        - name: fluentd
+          image: fluent/fluentd:v1.16
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "200Mi"
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+`,
+required:["spec.selector.matchLabels","spec.template.spec.containers"]},
+
+{id:"job",kind:"Job",api:"batch/v1",cat:"workloads",note:"Runs a Pod to completion for a one-off or batch task.",
+yaml:`apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-migration
+spec:
+  completions: 1
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+        - name: migrate
+          image: myorg/migrate:1.0
+          command: ["./migrate.sh"]
+      restartPolicy: Never
+`,
+required:["spec.template.spec.containers"]},
+
+{id:"cronjob",kind:"CronJob",api:"batch/v1",cat:"workloads",note:"Runs a Job on a recurring schedule, using standard cron syntax.",
+yaml:`apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-backup
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: myorg/backup:1.0
+              command: ["./backup.sh"]
+          restartPolicy: OnFailure
+`,
+required:["spec.schedule","spec.jobTemplate.spec.template.spec.containers"]},
+
+{id:"replicationcontroller",kind:"ReplicationController",api:"v1",cat:"workloads",note:"Legacy precursor to ReplicaSet. You may still meet it on older clusters or exam material — prefer Deployment in real-world manifests.",
+yaml:`apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx-rc
+spec:
+  replicas: 3
+  selector:
+    app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+`,
+required:["spec.selector","spec.template.spec.containers"]},
+
+{id:"service",kind:"Service",api:"v1",cat:"network",note:"A stable network endpoint that load-balances traffic across a set of Pods, matched by label selector.",
+yaml:`apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+`,
+required:["spec.selector","spec.ports"]},
+
+{id:"ingress",kind:"Ingress",api:"networking.k8s.io/v1",cat:"network",note:"Routes external HTTP(S) traffic to internal Services based on host and path rules.",
+yaml:`apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - app.example.com
+      secretName: app-tls
+`,
+required:["spec.rules"]},
+
+{id:"networkpolicy",kind:"NetworkPolicy",api:"networking.k8s.io/v1",cat:"network",note:"Firewall rules for Pods — controls which traffic is allowed in or out.",
+yaml:`apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+`,
+required:["spec.podSelector"]},
+
+{id:"endpoints",kind:"Endpoints",api:"v1",cat:"network",note:"Legacy list of IP/port targets behind a Service. Mostly superseded by EndpointSlice, but still shows up in older clusters and exams.",
+yaml:`apiVersion: v1
+kind: Endpoints
+metadata:
+  name: nginx-service
+subsets:
+  - addresses:
+      - ip: 10.244.1.12
+      - ip: 10.244.2.7
+    ports:
+      - port: 80
+        protocol: TCP
+`,
+required:["subsets"]},
+
+{id:"endpointslice",kind:"EndpointSlice",api:"discovery.k8s.io/v1",cat:"network",note:"The modern, scalable replacement for Endpoints — groups the network endpoints sitting behind a Service.",
+yaml:`apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: nginx-service-ab12
+  labels:
+    kubernetes.io/service-name: nginx-service
+addressType: IPv4
+ports:
+  - name: http
+    protocol: TCP
+    port: 80
+endpoints:
+  - addresses:
+      - "10.244.1.12"
+    conditions:
+      ready: true
+`,
+required:["addressType","ports","endpoints"]},
+
+{id:"gateway",kind:"Gateway",api:"gateway.networking.k8s.io/v1",cat:"network",note:"The newer Gateway API's entry point for traffic — a more expressive, role-oriented successor to Ingress.",
+yaml:`apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: web-gateway
+spec:
+  gatewayClassName: nginx
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+`,
+required:["spec.gatewayClassName","spec.listeners"],
+aliases:["ingress alternative","gateway api"]},
+
+{id:"httproute",kind:"HTTPRoute",api:"gateway.networking.k8s.io/v1",cat:"network",note:"Defines HTTP routing rules attached to a Gateway — the Gateway API equivalent of Ingress path rules.",
+yaml:`apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: web-route
+spec:
+  parentRefs:
+    - name: web-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: nginx-service
+          port: 80
+`,
+required:["spec.parentRefs","spec.rules"],
+aliases:["gateway api","routing"]},
+
+{id:"configmap",kind:"ConfigMap",api:"v1",cat:"config",note:"Stores non-secret configuration as key-value pairs that Pods can consume as env vars or files.",
+yaml:`apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  config.yaml: |
+    server:
+      port: 8080
+      timeout: 30s
+`,
+required:["data"]},
+
+{id:"secret",kind:"Secret",api:"v1",cat:"config",note:"Like a ConfigMap, but for sensitive values. stringData is auto-base64-encoded by the API server.",
+yaml:`apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+type: Opaque
+stringData:
+  username: admin
+  password: "S3cretP@ss"
+`,
+required:["type"]},
+
+{id:"pv",kind:"PersistentVolume",api:"v1",cat:"config",note:"A cluster-level piece of storage provisioned by an admin or dynamically via a StorageClass.",
+yaml:`apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /mnt/data
+`,
+required:["spec.capacity.storage","spec.accessModes"]},
+
+{id:"pvc",kind:"PersistentVolumeClaim",api:"v1",cat:"config",note:"A request for storage by a user, bound automatically (or manually) to a matching PersistentVolume.",
+yaml:`apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+`,
+required:["spec.accessModes","spec.resources.requests.storage"]},
+
+{id:"storageclass",kind:"StorageClass",api:"storage.k8s.io/v1",cat:"config",note:"Defines a class of storage with a provisioner, used for dynamic volume provisioning.",
+yaml:`apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  fsType: ext4
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+`,
+required:["provisioner"]},
+
+{id:"namespace",kind:"Namespace",api:"v1",cat:"rbac",note:"A virtual cluster used to partition resources between teams, environments, or projects.",
+yaml:`apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    environment: staging
+`,
+required:[]},
+
+{id:"serviceaccount",kind:"ServiceAccount",api:"v1",cat:"rbac",note:"An identity that Pods use to authenticate to the Kubernetes API.",
+yaml:`apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-service-account
+  namespace: default
+`,
+required:[]},
+
+{id:"role",kind:"Role",api:"rbac.authorization.k8s.io/v1",cat:"rbac",note:"Grants permissions (verbs on resources) within a single namespace.",
+yaml:`apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+`,
+required:["rules"]},
+
+{id:"rolebinding",kind:"RoleBinding",api:"rbac.authorization.k8s.io/v1",cat:"rbac",note:"Binds a Role's permissions to a user, group, or ServiceAccount within a namespace.",
+yaml:`apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: app-service-account
+    namespace: default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+`,
+required:["subjects","roleRef"]},
+
+{id:"clusterrole",kind:"ClusterRole",api:"rbac.authorization.k8s.io/v1",cat:"rbac",note:"Like a Role, but cluster-wide and can also grant access to cluster-scoped resources.",
+yaml:`apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+`,
+required:["rules"]},
+
+{id:"clusterrolebinding",kind:"ClusterRoleBinding",api:"rbac.authorization.k8s.io/v1",cat:"rbac",note:"Binds a ClusterRole's permissions across the entire cluster.",
+yaml:`apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-nodes-global
+subjects:
+  - kind: ServiceAccount
+    name: app-service-account
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: node-reader
+  apiGroup: rbac.authorization.k8s.io
+`,
+required:["subjects","roleRef"]},
+
+{id:"hpa",kind:"HorizontalPodAutoscaler",api:"autoscaling/v2",cat:"policy",note:"Automatically scales replica count up or down based on observed metrics like CPU.",
+yaml:`apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+`,
+required:["spec.scaleTargetRef","spec.minReplicas","spec.maxReplicas"]},
+
+{id:"resourcequota",kind:"ResourceQuota",api:"v1",cat:"policy",note:"Caps total resource consumption (CPU, memory, object counts) within a namespace.",
+yaml:`apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: default
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "20"
+`,
+required:["spec.hard"]},
+
+{id:"limitrange",kind:"LimitRange",api:"v1",cat:"policy",note:"Sets default and min/max resource constraints for containers in a namespace.",
+yaml:`apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: default
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "256Mi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "128Mi"
+      max:
+        cpu: "1"
+        memory: "512Mi"
+`,
+required:["spec.limits"]},
+
+{id:"pdb",kind:"PodDisruptionBudget",api:"policy/v1",cat:"policy",note:"Limits how many Pods of a set can be voluntarily evicted at once (e.g. during node drains).",
+yaml:`apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: nginx
+`,
+required:["spec.selector"]},
+
+{id:"priorityclass",kind:"PriorityClass",api:"scheduling.k8s.io/v1",cat:"policy",note:"Defines a scheduling priority level Pods can reference, so the scheduler knows what to preempt first under pressure.",
+yaml:`apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000
+globalDefault: false
+description: "Used for business-critical pods that should preempt lower-priority workloads."
+`,
+required:["value"]},
+
+{id:"crd",kind:"CustomResourceDefinition",api:"apiextensions.k8s.io/v1",cat:"extend",note:"Registers a brand-new resource type with the API server — the foundation of Kubernetes Operators.",
+yaml:`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: widgets.example.com
+spec:
+  group: example.com
+  names:
+    kind: Widget
+    plural: widgets
+    singular: widget
+    shortNames: ["wd"]
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                size:
+                  type: string
+`,
+required:["spec.group","spec.names","spec.versions"]},
+
+{id:"lease",kind:"Lease",api:"coordination.k8s.io/v1",cat:"extend",note:"A lightweight lock object used for leader election between replicas of a controller.",
+yaml:`apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  name: example-controller-lock
+  namespace: kube-system
+spec:
+  holderIdentity: controller-pod-abc123
+  leaseDurationSeconds: 15
+  renewTime: "2026-06-22T10:00:00.000000Z"
+`,
+required:["spec.holderIdentity","spec.leaseDurationSeconds"]},
+
+{id:"runtimeclass",kind:"RuntimeClass",api:"node.k8s.io/v1",cat:"extend",note:"Lets a Pod request a specific container runtime (e.g. gVisor, Kata) instead of the node's default.",
+yaml:`apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+`,
+required:["handler"]},
+
+{id:"mutatingwebhook",kind:"MutatingWebhookConfiguration",api:"admissionregistration.k8s.io/v1",cat:"extend",note:"Registers a webhook that can modify objects on the way into the API server — e.g. injecting a sidecar container.",
+yaml:`apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: sidecar-injector
+webhooks:
+  - name: sidecar-injector.example.com
+    clientConfig:
+      service:
+        name: sidecar-injector-svc
+        namespace: default
+        path: "/mutate"
+      caBundle: ""
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+        scope: "Namespaced"
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Ignore
+`,
+required:["webhooks"],
+aliases:["admission webhook","mutating"]},
+
+{id:"validatingwebhook",kind:"ValidatingWebhookConfiguration",api:"admissionregistration.k8s.io/v1",cat:"extend",note:"Registers a webhook that can accept or reject objects on the way into the API server — used for policy enforcement.",
+yaml:`apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: require-labels
+webhooks:
+  - name: require-labels.example.com
+    clientConfig:
+      service:
+        name: policy-checker-svc
+        namespace: default
+        path: "/validate"
+      caBundle: ""
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+        scope: "Namespaced"
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Fail
+`,
+required:["webhooks"],
+aliases:["admission webhook","validating","policy enforcement"]},
+
+{id:"eksctl-clusterconfig",kind:"ClusterConfig",api:"eksctl.io/v1alpha5",cat:"cloud",note:"⚠️ Not a Kubernetes API object — eksctl reads this to provision the AWS EKS control plane and node groups before kubectl even exists. Once the cluster is up, every other manifest in this list applies to it normally.",
+yaml:`apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: my-cluster
+  region: us-east-1
+  version: "1.31"
+nodeGroups:
+  - name: ng-1
+    instanceType: t3.medium
+    desiredCapacity: 3
+    minSize: 1
+    maxSize: 5
+`,
+required:["metadata.region","nodeGroups"],
+aliases:["eks","eksctl","aws","eks cluster","provisioning"]},
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const validated = new Set();
+let current = RESOURCES[0];
+let coverHidden = false;
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+const sidebar = document.getElementById("sidebar");
+function buildSidebar(){
+  sidebar.innerHTML = "";
+  CATEGORIES.forEach(cat=>{
+    const inCat = RESOURCES.filter(r=>r.cat===cat.id);
+    if(inCat.length === 0) return;
+    const group = document.createElement("div");
+    group.className = "sidebar-group";
+    const label = document.createElement("div");
+    label.className = "sidebar-label";
+    label.textContent = cat.label;
+    group.appendChild(label);
+    inCat.forEach(r=>{
+      const item = document.createElement("div");
+      item.className = "res-item";
+      item.dataset.id = r.id;
+      item.dataset.search = (r.kind + " " + (r.aliases||[]).join(" ")).toLowerCase();
+      item.innerHTML = `<span class="res-dot" style="background:${cat.color}"></span><span>${r.kind}</span><span class="res-check">✓</span>`;
+      item.addEventListener("click", ()=>selectResource(r.id));
+      group.appendChild(item);
+    });
+    sidebar.appendChild(group);
+  });
+  refreshSidebarActive();
+}
+function refreshSidebarActive(){
+  document.querySelectorAll(".res-item").forEach(el=>{
+    el.classList.toggle("active", el.dataset.id === current.id);
+    el.classList.toggle("done", validated.has(el.dataset.id));
+  });
+}
+
+/* ============================================================
+   CODEMIRROR EDITORS
+   ============================================================ */
+const refCM = CodeMirror.fromTextArea(document.getElementById("referenceArea"), {
+  mode:"yaml", theme:"default", lineNumbers:true, readOnly:true,
+  tabSize:2, styleActiveLine:false,
+});
+const practiceCM = CodeMirror.fromTextArea(document.getElementById("practiceArea"), {
+  mode:"yaml", theme:"default", lineNumbers:true, readOnly:false,
+  tabSize:2, indentUnit:2, styleActiveLine:true, autofocus:true,
+});
+
+/* ============================================================
+   RESOURCE SELECTION
+   ============================================================ */
+function selectResource(id){
+  current = RESOURCES.find(r=>r.id===id);
+  document.getElementById("refKindLabel").textContent = `${current.kind}  ·  ${current.api}`;
+  document.getElementById("refNote").innerHTML = `${current.note} &nbsp; apiVersion: <code>${current.api}</code>`;
+  refCM.setValue(current.yaml);
+  refreshSidebarActive();
+  setTimeout(()=>{refCM.refresh(); practiceCM.refresh();}, 0);
+}
+
+/* ============================================================
+   COVER (hide/reveal reference)
+   ============================================================ */
+const cover = document.getElementById("refCover");
+const toggleCoverBtn = document.getElementById("toggleCoverBtn");
+toggleCoverBtn.addEventListener("click", ()=>{
+  coverHidden = !coverHidden;
+  cover.classList.toggle("hidden", coverHidden);
+  toggleCoverBtn.textContent = coverHidden ? "Hide answer" : "Show answer";
+});
+
+/* ============================================================
+   LINTING
+   ============================================================ */
+function getPath(obj, path){
+  const parts = path.split(".");
+  let cur = obj;
+  for(const p of parts){
+    if(cur === null || typeof cur !== "object" || !(p in cur)) return undefined;
+    cur = cur[p];
+  }
+  return cur;
+}
+
+function runLint(){
+  const text = practiceCM.getValue();
+  const rows = []; // {level: 'ok'|'warn'|'err', msg, loc}
+
+  if(text.trim().length === 0){
+    renderLint([], true);
+    return;
+  }
+
+  if(/\t/.test(text)){
+    rows.push({level:"err", msg:"Tab character found — YAML indentation must use spaces, never tabs."});
+  }
+
+  let parsed;
+  try{
+    parsed = jsyaml.load(text);
+    rows.push({level:"ok", msg:"YAML syntax is valid."});
+  }catch(e){
+    const line = e.mark ? e.mark.line + 1 : "?";
+    const col = e.mark ? e.mark.column + 1 : "?";
+    rows.push({level:"err", msg:"YAML syntax error: " + e.reason, loc:`Line ${line}, Col ${col}`});
+    renderLint(rows);
+    markValidated(false);
+    return;
+  }
+
+  if(parsed === null || typeof parsed !== "object" || Array.isArray(parsed)){
+    rows.push({level:"err", msg:"Top level of the document must be a mapping (key: value), not empty, a list, or a scalar."});
+    renderLint(rows);
+    markValidated(false);
+    return;
+  }
+
+  // Core required fields every manifest needs
+  if(typeof parsed.apiVersion === "string" && parsed.apiVersion.length){
+    rows.push({level:"ok", msg:"apiVersion is present."});
+  } else {
+    rows.push({level:"err", msg:"Missing required field: apiVersion"});
+  }
+
+  if(typeof parsed.kind === "string" && parsed.kind.length){
+    rows.push({level:"ok", msg:"kind is present."});
+  } else {
+    rows.push({level:"err", msg:"Missing required field: kind"});
+  }
+
+  const name = getPath(parsed, "metadata.name");
+  if(typeof name === "string" && name.length){
+    rows.push({level:"ok", msg:"metadata.name is present."});
+  } else {
+    rows.push({level:"err", msg:"Missing required field: metadata.name"});
+  }
+
+  // Match against the resource being practiced
+  if(parsed.kind && parsed.kind !== current.kind){
+    rows.push({level:"warn", msg:`You're practicing ${current.kind}, but kind is set to "${parsed.kind}".`});
+  }
+  if(parsed.apiVersion && parsed.apiVersion !== current.api){
+    rows.push({level:"warn", msg:`Expected apiVersion "${current.api}" for ${current.kind} — found "${parsed.apiVersion}". (Some resources do support more than one valid version.)`});
+  }
+
+  // Resource-specific structural checks
+  current.required.forEach(path=>{
+    const val = getPath(parsed, path);
+    if(val === undefined || val === null || (Array.isArray(val) && val.length===0) || (typeof val==="object" && !Array.isArray(val) && Object.keys(val).length===0)){
+      rows.push({level:"err", msg:`Missing or empty field expected for ${current.kind}: ${path}`});
+    } else {
+      rows.push({level:"ok", msg:`Found expected field: ${path}`});
+    }
+  });
+
+  // Secret / ConfigMap special-case: data OR stringData/binaryData
+  if(current.id === "secret"){
+    if(!parsed.data && !parsed.stringData){
+      rows.push({level:"err", msg:"Secret needs either data or stringData."});
+    } else {
+      rows.push({level:"ok", msg:"Secret has data or stringData."});
+    }
+  }
+
+  // naming convention warning (common k8s style guide point)
+  if(typeof name === "string" && /[A-Z]/.test(name)){
+    rows.push({level:"warn", msg:"metadata.name contains uppercase letters — Kubernetes resource names must be lowercase RFC 1123 DNS labels."});
+  }
+  if(typeof name === "string" && /_/.test(name)){
+    rows.push({level:"warn", msg:"metadata.name contains underscores — use hyphens instead (DNS label rules)."});
+  }
+
+  renderLint(rows);
+  const hasErr = rows.some(r=>r.level==="err");
+  markValidated(!hasErr);
+}
+
+function markValidated(pass){
+  if(pass){ validated.add(current.id); }
+  document.getElementById("progressCount").textContent = validated.size;
+  refreshSidebarActive();
+}
+
+function renderLint(rows, empty){
+  const list = document.getElementById("lintList");
+  list.innerHTML = "";
+  if(empty || rows.length === 0){
+    list.innerHTML = '<div class="lint-empty">Start typing — checks appear here.</div>';
+  } else {
+    rows.forEach(r=>{
+      const li = document.createElement("li");
+      li.className = "lint-row " + r.level;
+      const icon = r.level==="ok" ? "✓" : r.level==="warn" ? "⚠" : "✕";
+      li.innerHTML = `<span class="lint-icon">${icon}</span><span class="msg">${r.msg}</span>${r.loc ? `<span class="loc">${r.loc}</span>` : ""}`;
+      list.appendChild(li);
+    });
+  }
+  const ok = rows.filter(r=>r.level==="ok").length;
+  const warn = rows.filter(r=>r.level==="warn").length;
+  const err = rows.filter(r=>r.level==="err").length;
+  document.getElementById("cOk").textContent = ok;
+  document.getElementById("cWarn").textContent = warn;
+  document.getElementById("cErr").textContent = err;
+}
+
+/* debounce */
+let lintTimer = null;
+practiceCM.on("change", ()=>{
+  clearTimeout(lintTimer);
+  lintTimer = setTimeout(runLint, 500);
+});
+document.getElementById("validateBtn").addEventListener("click", runLint);
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  practiceCM.setValue("");
+  renderLint([], true);
+  practiceCM.focus();
+});
+
+/* ---------- sidebar search / "request a resource" ---------- */
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function filterSidebar(){
+  const q = document.getElementById("resourceSearch").value.trim().toLowerCase();
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const items = document.querySelectorAll(".res-item");
+  let visibleCount = 0;
+  items.forEach(el=>{
+    const hay = el.dataset.search || "";
+    const match = tokens.length === 0 || tokens.every(t => hay.includes(t));
+    el.style.display = match ? "" : "none";
+    if(match) visibleCount++;
+  });
+  document.querySelectorAll(".sidebar-group").forEach(g=>{
+    const visibleInGroup = Array.from(g.querySelectorAll(".res-item")).some(el=>el.style.display !== "none");
+    g.style.display = (tokens.length === 0 || visibleInGroup) ? "" : "none";
+  });
+  const empty = document.getElementById("searchEmpty");
+  if(tokens.length > 0 && visibleCount === 0){
+    empty.classList.add("show");
+    empty.innerHTML = `No match for "<b>${escapeHtml(q)}</b>" in this list yet.
+      <div class="ai-gen-row"><button class="btn ai-btn" id="aiGenBtn">✨ Generate with Claude</button></div>
+      <div class="ai-gen-hint">Calls api.anthropic.com directly from your browser using your own API key (asked for once per session, never saved).</div>
+      <div class="ai-gen-or">Or ask Claude in chat: "add ${escapeHtml(q)} to the YAML dojo" and it'll be added to this file permanently.</div>`;
+  } else {
+    empty.classList.remove("show");
+  }
+}
+document.getElementById("resourceSearch").addEventListener("input", filterSidebar);
+
+/* ============================================================
+   LIVE AI GENERATION (opt-in, user supplies their own API key)
+   ============================================================ */
+let userApiKey = null;
+
+function updateKeyStatus(){
+  const el = document.getElementById("keyStatus");
+  el.innerHTML = userApiKey
+    ? `🔑 key set for this session <a id="clearKeyLink">clear</a>`
+    : `no API key set yet`;
+  const clearLink = document.getElementById("clearKeyLink");
+  if(clearLink){
+    clearLink.addEventListener("click", ()=>{ userApiKey = null; updateKeyStatus(); });
+  }
+}
+updateKeyStatus();
+
+const keyModalOverlay = document.getElementById("keyModalOverlay");
+const apiKeyInput = document.getElementById("apiKeyInput");
+let keyModalCallback = null;
+
+function openKeyModal(onSaved){
+  keyModalCallback = onSaved;
+  apiKeyInput.value = "";
+  keyModalOverlay.classList.add("show");
+  setTimeout(()=>apiKeyInput.focus(), 50);
+}
+function closeKeyModal(){
+  keyModalOverlay.classList.remove("show");
+  keyModalCallback = null;
+}
+document.getElementById("keyModalCancel").addEventListener("click", closeKeyModal);
+document.getElementById("keyModalSave").addEventListener("click", ()=>{
+  const val = apiKeyInput.value.trim();
+  if(!val) return;
+  userApiKey = val;
+  updateKeyStatus();
+  const cb = keyModalCallback;
+  closeKeyModal();
+  if(cb) cb();
+});
+apiKeyInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") document.getElementById("keyModalSave").click();
+});
+
+document.getElementById("searchEmpty").addEventListener("click", (e)=>{
+  if(e.target && e.target.id === "aiGenBtn"){
+    const query = document.getElementById("resourceSearch").value.trim();
+    if(!query) return;
+    if(!userApiKey){
+      openKeyModal(()=>{ if(userApiKey) doGenerate(query); });
+    } else {
+      doGenerate(query);
+    }
+  }
+});
+
+function stripFences(t){
+  return t.replace(/^```[a-zA-Z]*\n/, "").replace(/```\s*$/, "").trim();
+}
+
+async function doGenerate(query){
+  const btn = document.getElementById("aiGenBtn");
+  const empty = document.getElementById("searchEmpty");
+  if(btn){ btn.disabled = true; btn.textContent = "Generating…"; }
+
+  const prompt = `You are helping someone practice writing Kubernetes YAML manifests. Produce ONE complete, realistic, production-style example manifest for this resource: "${query}".
+Rules:
+- Output valid YAML only. No markdown code fences, no commentary before or after.
+- Include apiVersion, kind, and metadata.name at minimum, plus a realistic spec.
+- If "${query}" is not actually a Kubernetes-applyable API object, still return the closest correct real YAML artifact for it (e.g. a provisioning tool's config file) and add exactly one leading YAML comment line (starting with #) explaining what it actually is.`;
+
+  try{
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": userApiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 900,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    if(!resp.ok){
+      const bodyText = await resp.text();
+      let msg = `Request failed (HTTP ${resp.status}).`;
+      if(resp.status === 401) msg = "That API key was rejected (401 unauthorized). Check it and try again.";
+      else if(resp.status === 429) msg = "Rate limited (429) — wait a moment and try again.";
+      throw new Error(msg + " " + bodyText.slice(0, 200));
+    }
+    const data = await resp.json();
+    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+    if(!text) throw new Error("Claude returned an empty response.");
+    addAiResource(query, stripFences(text));
+  }catch(err){
+    empty.innerHTML = `<b style="color:var(--bad)">Generation failed:</b> ${escapeHtml(err.message || String(err))}
+      <div class="ai-gen-or">This can also happen if your browser blocks the direct API call. You can still ask Claude in chat: "add ${escapeHtml(query)} to the YAML dojo".</div>`;
+  }
+}
+
+function addAiResource(query, yamlText){
+  let parsed = null;
+  try{ parsed = jsyaml.load(yamlText); }catch(e){ /* leave null — generic lint will surface the syntax error */ }
+  const kind = (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.kind) ? parsed.kind : query;
+  const api = (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.apiVersion) ? parsed.apiVersion : "unknown";
+  const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "resource";
+  const id = "ai-" + slug + "-" + Date.now();
+  RESOURCES.push({
+    id, kind, api, cat: "ai",
+    note: `✨ Generated live by Claude for "${query}". Not manually vetted — double-check against "kubectl explain" or the official docs before relying on it.`,
+    yaml: yamlText.endsWith("\n") ? yamlText : yamlText + "\n",
+    required: [],
+    aliases: [query]
+  });
+  document.getElementById("resourceSearch").value = "";
+  buildSidebar();
+  selectResource(id);
+  filterSidebar();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildSidebar();
+document.getElementById("progressTotal").textContent = RESOURCES.length;
+selectResource(RESOURCES[0].id);
+practiceCM.setValue("");
+setTimeout(()=>{ refCM.refresh(); practiceCM.refresh(); }, 50);
+</script>
+</body>
+</html>
