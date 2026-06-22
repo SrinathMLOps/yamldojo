@@ -1138,8 +1138,207 @@ aliases:["eks","eksctl","aws","eks cluster","provisioning"]},
 {id:"mongodb",kind:"MongoDB",api:"mongodbcommunity.mongodb.com/v1",cat:"extend",note:"MongoDB Community Operator deployment.",aliases:["mongodb","database","nosql"]},
 {id:"kafka-topic",kind:"KafkaTopic",api:"kafka.strimzi.io/v1beta2",cat:"extend",note:"Kafka topic via Strimzi Operator.",aliases:["kafka","messaging","streaming"]},
 {id:"redis",kind:"Redis",api:"redis.redis.opstreaming.com/v1",cat:"extend",note:"Redis Operator deployment.",aliases:["redis","cache","database"]},
+{id:"mysql-cluster",kind:"MySQLCluster",api:"mysql.oracle.com/v8.0",cat:"extend",note:"MySQL InnoDB Cluster deployment.",aliases:["mysql","database","sql"]},
+{id:"elasticsearch",kind:"Elasticsearch",api:"elasticsearch.k8s.elastic.co/v1",cat:"extend",note:"Elasticsearch cluster via Elastic Operator.",aliases:["elasticsearch","search","logging"]},
+{id:"opensearch",kind:"OpenSearchCluster",api:"opensearchservice.k8s.aws/v1alpha1",cat:"extend",note:"OpenSearch cluster deployment.",aliases:["opensearch","search"]},
+{id:"cassandra",kind:"CassandraDatacenter",api:"cassandra.datastax.com/v1beta1",cat:"extend",note:"Apache Cassandra datacenter.",aliases:["cassandra","database","nosql"]},
+{id:"zookeeper",kind:"Zookeeper",api:"zookeeper.streami.io/v1beta1",cat:"extend",note:"Apache Zookeeper cluster.",aliases:["zookeeper","coordination"]},
+{id:"kafka-user",kind:"KafkaUser",api:"kafka.strimzi.io/v1beta2",cat:"extend",note:"Kafka user with authentication.",aliases:["kafka","user","auth"]},
+{id:"kafka-connect",kind:"KafkaConnect",api:"kafka.strimzi.io/v1beta2",cat:"extend",note:"Kafka Connect cluster for data integration.",aliases:["kafka","connect","integration"]},
+{id:"nats-cluster",kind:"NATSCluster",api:"nats.io/v1alpha2",cat:"extend",note:"NATS messaging cluster.",aliases:["nats","messaging"]},
+{id:"pulsar-cluster",kind:"PulsarCluster",api:"pulsar.streamnative.io/v1alpha1",cat:"extend",note:"Apache Pulsar cluster deployment.",aliases:["pulsar","messaging","streaming"]},
+{id:"rabbitmq-cluster",kind:"RabbitmqCluster",api:"rabbitmq.com/v1beta1",cat:"extend",note:"RabbitMQ cluster deployment.",aliases:["rabbitmq","messaging","queue"]},
+
+// Extended Node Provisioning
+{id:"machine",kind:"Machine",api:"cluster.x-k8s.io/v1",cat:"cloud",note:"Cluster API machine definition.",aliases:["machine","cluster api"]},
+{id:"machinedeployment",kind:"MachineDeployment",api:"cluster.x-k8s.io/v1",cat:"cloud",note:"Cluster API machine deployment.",aliases:["machine","deployment"]},
+{id:"machineset",kind:"MachineSet",api:"cluster.x-k8s.io/v1",cat:"cloud",note:"Cluster API machine set.",aliases:["machine","set"]},
+{id:"verticalpodautoscaler",kind:"VerticalPodAutoscaler",api:"autoscaling.k8s.io/v1",cat:"policy",note:"VPA for vertical pod scaling.",aliases:["vpa","scaling","vertical"]},
+
+// Extended Networking
+{id:"ingressclass",kind:"IngressClass",api:"networking.k8s.io/v1",cat:"network",note:"Ingress controller class definition.",aliases:["ingress","class"]},
+{id:"endpoints",kind:"Endpoints",api:"v1",cat:"network",note:"Legacy endpoint definition.",aliases:["endpoint","service"]},
+{id:"dnspolicy",kind:"DNSEndpoint",api:"externaldns.io/v1alpha1",cat:"network",note:"ExternalDNS endpoint for DNS management.",aliases:["dns","external-dns"]},
+{id:"metallb-advertisement",kind:"L2Advertisement",api:"metallb.io/v1beta2",cat:"network",note:"MetalLB L2 advertisement configuration.",aliases:["metallb","l2","advertisement"]},
+{id:"metallb-bgpadvertisement",kind:"BGPAdvertisement",api:"metallb.io/v1beta2",cat:"network",note:"MetalLB BGP advertisement.",aliases:["metallb","bgp"]},
+
+// Extended Monitoring & Observability
+{id:"loki-stack",kind:"LokiStack",api:"loki.grafana.com/v1",cat:"extend",note:"Loki log aggregation stack.",aliases:["loki","logging","observability"]},
+{id:"tempo-stack",kind:"TempoStack",api:"tempo.grafana.com/v1alpha1",cat:"extend",note:"Tempo distributed tracing stack.",aliases:["tempo","tracing","observability"]},
+{id:"thanos",kind:"ThanosRuler",api:"monitoring.coreos.com/v1",cat:"extend",note:"Thanos long-term metrics retention.",aliases:["thanos","metrics","retention"]},
+{id:"grafana-dashboard",kind:"GrafanaDashboard",api:"grafana.integreatly.org/v1beta1",cat:"extend",note:"Grafana dashboard definition.",aliases:["grafana","dashboard"]},
+{id:"probe",kind:"Probe",api:"monitoring.coreos.com/v1",cat:"extend",note:"Prometheus probe for blackbox monitoring.",aliases:["prometheus","probe","monitoring"]},
+
+// Extended Policy & Security  
+{id:"falco-rule",kind:"FalcoRule",api:"falco.org/v1alpha1",cat:"extend",note:"Falco runtime security rule.",aliases:["falco","security","runtime"]},
+{id:"imagepoliwcy",kind:"ImagePolicyWebhook",api:"admission.k8s.io/v1",cat:"extend",note:"Admission webhook for image policy.",aliases:["image","policy","admission"]},
+{id:"cosign-policy",kind:"ClusterImagePolicy",api:"sigstore.dev/v1alpha1",cat:"extend",note:"Cosign image signing policy.",aliases:["cosign","image","signing"]},
+
+// Extended Backup & Storage
+{id:"volumesnapshot-class",kind:"VolumeSnapshotClass",api:"snapshot.storage.k8s.io/v1",cat:"extend",note:"Volume snapshot class definition.",aliases:["snapshot","storage"]},
+{id:"volumesnapshot-content",kind:"VolumeSnapshotContent",api:"snapshot.storage.k8s.io/v1",cat:"extend",note:"Volume snapshot content.",aliases:["snapshot","content"]},
+{id:"ceph-blockpool",kind:"CephBlockPool",api:"ceph.rook.io/v1",cat:"extend",note:"Ceph block storage pool.",aliases:["ceph","storage","block"]},
+{id:"ceph-filesystem",kind:"CephFilesystem",api:"ceph.rook.io/v1",cat:"extend",note:"Ceph shared filesystem.",aliases:["ceph","filesystem"]},
+{id:"ceph-objectstore",kind:"CephObjectStore",api:"ceph.rook.io/v1",cat:"extend",note:"Ceph S3-compatible object storage.",aliases:["ceph","object","s3"]},
+
+// Extended Secret Management
+{id:"secretstore",kind:"SecretStore",api:"external-secrets.io/v1beta1",cat:"config",note:"Namespace-scoped secret backend.",aliases:["secret","store","backend"]},
+{id:"clustersecretstore",kind:"ClusterSecretStore",api:"external-secrets.io/v1beta1",cat:"config",note:"Cluster-wide secret backend.",aliases:["secret","cluster","backend"]},
+{id:"pushsecret",kind:"PushSecret",api:"external-secrets.io/v1alpha1",cat:"config",note:"Push Kubernetes secrets to external managers.",aliases:["secret","push"]},
+{id:"vaultauth",kind:"VaultAuth",api:"external-secrets.io/v1beta1",cat:"config",note:"Vault authentication configuration.",aliases:["vault","auth"]},
+
+// Extended GitOps
+{id:"argocd-appproject",kind:"AppProject",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo CD project with RBAC.",aliases:["argocd","project"]},
+{id:"argo-workflow",kind:"Workflow",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo Workflows DAG definition.",aliases:["argo","workflow","dag"]},
+{id:"argo-cronworkflow",kind:"CronWorkflow",api:"argoproj.io/v1alpha1",cat:"extend",note:"Scheduled Argo Workflow.",aliases:["argo","cron","workflow"]},
+{id:"argo-workflowtemplate",kind:"WorkflowTemplate",api:"argoproj.io/v1alpha1",cat:"extend",note:"Reusable Argo Workflow template.",aliases:["argo","template"]},
+{id:"argo-eventsource",kind:"EventSource",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo Events source configuration.",aliases:["argo","event"]},
+{id:"argo-sensor",kind:"Sensor",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo Events sensor for event processing.",aliases:["argo","sensor"]},
+
+// Extended Flux CD
+{id:"flux-gitrepo",kind:"GitRepository",api:"source.toolkit.fluxcd.io/v1",cat:"extend",note:"Flux CD git repository source.",aliases:["flux","git","source"]},
+{id:"flux-helmrepo",kind:"HelmRepository",api:"source.toolkit.fluxcd.io/v1",cat:"extend",note:"Flux CD Helm chart repository.",aliases:["flux","helm","repository"]},
+{id:"flux-imageupdate",kind:"ImageUpdateAutomation",api:"image.toolkit.fluxcd.io/v1beta1",cat:"extend",note:"Flux CD automatic image updates.",aliases:["flux","image","update"]},
+
+// Extended Knative
+{id:"knative-revision",kind:"Revision",api:"serving.knative.dev/v1",cat:"extend",note:"Knative service revision.",aliases:["knative","revision"]},
+{id:"knative-configuration",kind:"Configuration",api:"serving.knative.dev/v1",cat:"extend",note:"Knative configuration.",aliases:["knative","config"]},
+{id:"knative-route",kind:"Route",api:"serving.knative.dev/v1",cat:"extend",note:"Knative traffic routing.",aliases:["knative","route"]},
+{id:"knative-broker",kind:"Broker",api:"eventing.knative.dev/v1",cat:"extend",note:"Knative event broker.",aliases:["knative","broker","event"]},
+{id:"knative-trigger",kind:"Trigger",api:"eventing.knative.dev/v1",cat:"extend",note:"Knative event trigger.",aliases:["knative","trigger","event"]},
+{id:"knative-channel",kind:"Channel",api:"messaging.knative.dev/v1",cat:"extend",note:"Knative event channel.",aliases:["knative","channel"]},
+
+// Extended Tekton
+{id:"tekton-clustertask",kind:"ClusterTask",api:"tekton.dev/v1",cat:"extend",note:"Cluster-wide Tekton task.",aliases:["tekton","cluster task"]},
+{id:"tekton-triggertemplate",kind:"TriggerTemplate",api:"triggers.tekton.dev/v1beta1",cat:"extend",note:"Tekton trigger template.",aliases:["tekton","trigger"]},
+{id:"tekton-triggerbinding",kind:"TriggerBinding",api:"triggers.tekton.dev/v1beta1",cat:"extend",note:"Tekton trigger binding.",aliases:["tekton","binding"]},
+{id:"tekton-eventlistener",kind:"EventListener",api:"triggers.tekton.dev/v1beta1",cat:"extend",note:"Tekton webhook event listener.",aliases:["tekton","listener"]},
+
+// Extended Chaos
+{id:"chaos-engine",kind:"ChaosEngine",api:"litmuschaos.io/v1alpha1",cat:"extend",note:"LitmusChaos execution engine.",aliases:["chaos","engine"]},
+{id:"network-chaos",kind:"NetworkChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Chaos Mesh network fault injection.",aliases:["chaos","network"]},
+{id:"stress-chaos",kind:"StressChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Chaos Mesh CPU/Memory stress.",aliases:["chaos","stress"]},
+{id:"io-chaos",kind:"IOChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Chaos Mesh disk I/O interference.",aliases:["chaos","io"]},
+{id:"time-chaos",kind:"TimeChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Chaos Mesh clock skew injection.",aliases:["chaos","time"]},
+{id:"dns-chaos",kind:"DNSChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Chaos Mesh DNS hijacking.",aliases:["chaos","dns"]},
+
+// Extended Crossplane
+{id:"crossplane-providerconfig",kind:"ProviderConfig",api:"pkg.crossplane.io/v1alpha1",cat:"extend",note:"Crossplane provider credentials.",aliases:["crossplane","provider"]},
+{id:"crossplane-xrd",kind:"CompositeResourceDefinition",api:"apiextensions.crossplane.io/v1",cat:"extend",note:"Crossplane custom resource definition.",aliases:["crossplane","xrd"]},
+{id:"crossplane-claim",kind:"Claim",api:"apiextensions.crossplane.io/v1",cat:"extend",note:"Crossplane infrastructure claim.",aliases:["crossplane","claim"]},
+
+// Extended ML/AI
+{id:"ray-job",kind:"RayJob",api:"ray.io/v1",cat:"ai",note:"Ray job for distributed computing.",aliases:["ray","job","ml"]},
+{id:"ray-service",kind:"RayService",api:"ray.io/v1",cat:"ai",note:"Ray model serving service.",aliases:["ray","service","ml"]},
+{id:"spark-app",kind:"SparkApplication",api:"sparkoperator.k8s.netease.com/v1beta2",cat:"ai",note:"Apache Spark application on Kubernetes.",aliases:["spark","app","ml"]},
+{id:"pytorch-job",kind:"PyTorchJob",api:"kubeflow.org/v1",cat:"ai",note:"PyTorch distributed training job.",aliases:["pytorch","job","ml"]},
+{id:"mpi-job",kind:"MPIJob",api:"kubeflow.org/v1",cat:"ai",note:"MPI-based distributed training.",aliases:["mpi","job","ml"]},
+{id:"xgboost-job",kind:"XGBoostJob",api:"kubeflow.org/v1",cat:"ai",note:"XGBoost training job.",aliases:["xgboost","job","ml"]},
+{id:"kserve-runtime",kind:"ServingRuntime",api:"serving.kserve.org/v1alpha1",cat:"ai",note:"KServe runtime configuration.",aliases:["kserve","runtime","ml"]},
+{id:"kserve-clusterruntime",kind:"ClusterServingRuntime",api:"serving.kserve.org/v1alpha1",cat:"ai",note:"Cluster-wide KServe runtime.",aliases:["kserve","runtime","ml"]},
+{id:"modelmesh",kind:"ModelMesh",api:"modelmesh-serving.kserve.io/v1alpha1",cat:"ai",note:"ModelMesh model serving.",aliases:["modelmesh","ml","serving"]},
+{id:"notebook",kind:"Notebook",api:"kubeflow.org/v1",cat:"ai",note:"Kubeflow Jupyter notebook.",aliases:["notebook","jupyter","ml"]},
+{id:"katib-trial",kind:"Trial",api:"kubeflow.org/v1alpha3",cat:"ai",note:"Katib hyperparameter tuning trial.",aliases:["katib","trial","ml"]},
+
+// Native Kubernetes Advanced
+{id:"podtemplate",kind:"PodTemplate",api:"v1",cat:"workloads",note:"Pod template for reuse.",aliases:["pod","template"]},
+{id:"binding",kind:"Binding",api:"v1",cat:"rbac",note:"Pod binding to node.",aliases:["binding","pod"]},
+{id:"lease",kind:"Lease",api:"coordination.k8s.io/v1",cat:"extend",note:"Lease for distributed coordination.",aliases:["lease","coordination"]},
+{id:"event",kind:"Event",api:"v1",cat:"extend",note:"Kubernetes event record.",aliases:["event","record"]},
+{id:"csr",kind:"CertificateSigningRequest",api:"certificates.k8s.io/v1",cat:"rbac",note:"Certificate signing request.",aliases:["csr","certificate"]},
+{id:"apiservice",kind:"APIService",api:"apiregistration.k8s.io/v1",cat:"extend",note:"API service aggregation.",aliases:["api","service"]},
+{id:"runtimeclass",kind:"RuntimeClass",api:"node.k8s.io/v1",cat:"extend",note:"Container runtime class.",aliases:["runtime","container"]},
+
+// AWS Controllers
+{id:"ack-s3",kind:"Bucket",api:"s3.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS S3 bucket via ACK.",aliases:["ack","s3","aws"]},
+{id:"ack-dynamodb",kind:"Table",api:"dynamodb.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS DynamoDB table via ACK.",aliases:["ack","dynamodb","aws"]},
+{id:"ack-rds",kind:"DBInstance",api:"rds.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS RDS database via ACK.",aliases:["ack","rds","aws"]},
+{id:"ack-ecr",kind:"Repository",api:"ecr.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS ECR repository via ACK.",aliases:["ack","ecr","aws"]},
+{id:"ack-sns",kind:"Topic",api:"sns.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS SNS topic via ACK.",aliases:["ack","sns","aws"]},
+{id:"ack-sqs",kind:"Queue",api:"sqs.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS SQS queue via ACK.",aliases:["ack","sqs","aws"]},
+
+// Extended Cert Manager
+{id:"certrequest",kind:"CertificateRequest",api:"cert-manager.io/v1",cat:"extend",note:"Manual certificate request.",aliases:["cert-manager","cert"]},
+{id:"order",kind:"Order",api:"acme.cert-manager.io/v1",cat:"extend",note:"ACME order processing.",aliases:["acme","order"]},
+{id:"challenge",kind:"Challenge",api:"acme.cert-manager.io/v1",cat:"extend",note:"ACME HTTP01/DNS01 challenge.",aliases:["acme","challenge"]},
+
+// Extended Cilium
+{id:"cilium-clusterpolicy",kind:"CiliumClusterwideNetworkPolicy",api:"cilium.io/v2",cat:"network",note:"Cilium cluster-wide network policies.",aliases:["cilium","policy","cluster"]},
+{id:"cilium-egress",kind:"CiliumEgressGatewayPolicy",api:"cilium.io/v2",cat:"network",note:"Cilium egress routing through gateway.",aliases:["cilium","egress","gateway"]},
+{id:"cilium-bgp",kind:"CiliumBGPClusterConfig",api:"cilium.io/v2alpha1",cat:"network",note:"Cilium BGP cluster configuration.",aliases:["cilium","bgp","routing"]},
 
 ];
+
+// Add 150+ extended resources from items 151-495
+RESOURCES.push(
+{id:"karpenter-pool",kind:"NodePool",api:"karpenter.sh/v1",cat:"cloud",note:"Karpenter auto-scaling node pool"},
+{id:"ec2nodeclass",kind:"EC2NodeClass",api:"karpenter.k8s.aws/v1",cat:"cloud",note:"AWS EC2 node configuration"},
+{id:"nodeclaim",kind:"NodeClaim",api:"karpenter.sh/v1",cat:"cloud",note:"Karpenter node provisioning"},
+{id:"cluster-autoscaler",kind:"Deployment",api:"apps/v1",cat:"cloud",note:"Cluster Autoscaler for scaling"},
+{id:"eks-addon",kind:"Addon",api:"eks.amazonaws.com/v1",cat:"cloud",note:"EKS managed add-ons"},
+{id:"fargateprofile",kind:"FargateProfile",api:"eks.amazonaws.com/v1",cat:"cloud",note:"AWS Fargate serverless"},
+{id:"envoyfilter",kind:"EnvoyFilter",api:"networking.istio.io/v1alpha3",cat:"extend",note:"Istio Envoy customization"},
+{id:"istio-sidecar",kind:"Sidecar",api:"networking.istio.io/v1alpha3",cat:"extend",note:"Istio sidecar control"},
+{id:"workloadentry",kind:"WorkloadEntry",api:"networking.istio.io/v1",cat:"extend",note:"Istio external workload"},
+{id:"requestauth",kind:"RequestAuthentication",api:"security.istio.io/v1beta1",cat:"extend",note:"JWT authentication"},
+{id:"telemetry",kind:"Telemetry",api:"telemetry.istio.io/v1alpha1",cat:"extend",note:"Istio observability config"},
+{id:"certificate",kind:"Certificate",api:"cert-manager.io/v1",cat:"extend",note:"TLS certificate management"},
+{id:"issuer",kind:"Issuer",api:"cert-manager.io/v1",cat:"extend",note:"Cert issuer (namespace-scoped)"},
+{id:"clusterissuer",kind:"ClusterIssuer",api:"cert-manager.io/v1",cat:"extend",note:"Cert issuer (cluster-wide)"},
+{id:"externalsecret",kind:"ExternalSecret",api:"external-secrets.io/v1beta1",cat:"config",note:"Sync from Vault/AWS/GCP"},
+{id:"secretstore",kind:"SecretStore",api:"external-secrets.io/v1beta1",cat:"config",note:"Secret backend config"},
+{id:"clustersecretstore",kind:"ClusterSecretStore",api:"external-secrets.io/v1beta1",cat:"config",note:"Cluster secret backend"},
+{id:"sealedsecret",kind:"SealedSecret",api:"bitnami.com/v1alpha1",cat:"config",note:"Encrypted secrets for git"},
+{id:"argocd-app",kind:"Application",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo CD GitOps application"},
+{id:"applicationset",kind:"ApplicationSet",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo CD multi-app generation"},
+{id:"argocd-rollout",kind:"Rollout",api:"argoproj.io/v1alpha1",cat:"extend",note:"Argo Rollouts canary/blue-green"},
+{id:"analysistemplate",kind:"AnalysisTemplate",api:"argoproj.io/v1alpha1",cat:"extend",note:"Canary analysis metrics"},
+{id:"gitrepository",kind:"GitRepository",api:"source.toolkit.fluxcd.io/v1",cat:"extend",note:"Flux CD git source"},
+{id:"helmrelease",kind:"HelmRelease",api:"helm.toolkit.fluxcd.io/v2",cat:"extend",note:"Flux CD Helm deployment"},
+{id:"flux-kustomization",kind:"Kustomization",api:"kustomize.toolkit.fluxcd.io/v1",cat:"extend",note:"Flux CD Kustomize overlay"},
+{id:"prometheus",kind:"Prometheus",api:"monitoring.coreos.com/v1",cat:"extend",note:"Prometheus monitoring server"},
+{id:"alertmanager",kind:"Alertmanager",api:"monitoring.coreos.com/v1",cat:"extend",note:"Prometheus Alertmanager"},
+{id:"servicemonitor",kind:"ServiceMonitor",api:"monitoring.coreos.com/v1",cat:"extend",note:"Auto-scrape service metrics"},
+{id:"podmonitor",kind:"PodMonitor",api:"monitoring.coreos.com/v1",cat:"extend",note:"Auto-scrape pod metrics"},
+{id:"prometheusrule",kind:"PrometheusRule",api:"monitoring.coreos.com/v1",cat:"extend",note:"Alert and recording rules"},
+{id:"otelcollector",kind:"OpenTelemetryCollector",api:"opentelemetry.io/v1alpha1",cat:"extend",note:"OTEL metrics/traces/logs"},
+{id:"grafana",kind:"Grafana",api:"integreatly.org/v1alpha1",cat:"extend",note:"Grafana dashboards server"},
+{id:"lokistack",kind:"LokiStack",api:"loki.grafana.com/v1",cat:"extend",note:"Loki log aggregation"},
+{id:"kyverno-policy",kind:"ClusterPolicy",api:"kyverno.io/v1",cat:"extend",note:"Kyverno cluster policy"},
+{id:"gatekeeper-constraint",kind:"Constraint",api:"constraints.gatekeeper.sh/v1beta1",cat:"extend",note:"OPA Gatekeeper constraint"},
+{id:"validatingadmissionpolicy",kind:"ValidatingAdmissionPolicy",api:"admissionregistration.k8s.io/v1alpha1",cat:"extend",note:"Native K8s CEL validation"},
+{id:"falcorule",kind:"FalcoRule",api:"falco.org/v1",cat:"extend",note:"Falco runtime security"},
+{id:"velero-backup",kind:"Backup",api:"velero.io/v1",cat:"extend",note:"Velero backup instance"},
+{id:"velero-schedule",kind:"Schedule",api:"velero.io/v1",cat:"extend",note:"Velero backup schedule"},
+{id:"volumesnapshotclass",kind:"VolumeSnapshotClass",api:"snapshot.storage.k8s.io/v1",cat:"config",note:"Volume snapshot provisioner"},
+{id:"raycluster",kind:"RayCluster",api:"ray.io/v1",cat:"ai",note:"Ray distributed computing cluster"},
+{id:"tfjob",kind:"TFJob",api:"kubeflow.org/v1",cat:"ai",note:"TensorFlow training job"},
+{id:"pytorchjob",kind:"PyTorchJob",api:"kubeflow.org/v1",cat:"ai",note:"PyTorch training job"},
+{id:"inferenceservice",kind:"InferenceService",api:"serving.kubeserve.org/v1beta1",cat:"ai",note:"KServe model inference"},
+{id:"sparkapplication",kind:"SparkApplication",api:"sparkoperator.k8s.netease.com/v1beta2",cat:"ai",note:"Apache Spark application"},
+{id:"chaosexperiment",kind:"ChaosExperiment",api:"litmuschaos.io/v1alpha1",cat:"extend",note:"LitmusChaos experiment"},
+{id:"podchaos",kind:"PodChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Pod-level chaos injection"},
+{id:"networkchaos",kind:"NetworkChaos",api:"chaos-mesh.org/v1alpha1",cat:"extend",note:"Network fault injection"},
+{id:"crossplane-xrd",kind:"CompositeResourceDefinition",api:"apiextensions.crossplane.io/v1",cat:"cloud",note:"Crossplane composite resource"},
+{id:"cluster-api",kind:"Cluster",api:"cluster.x-k8s.io/v1beta1",cat:"cloud",note:"Cluster API for multi-cloud"},
+{id:"awscluster",kind:"AWSCluster",api:"infrastructure.cluster.x-k8s.io/v1beta1",cat:"cloud",note:"AWS Cluster API"},
+{id:"knative-service",kind:"Service",api:"serving.knative.dev/v1",cat:"extend",note:"Knative serverless service"},
+{id:"knative-broker",kind:"Broker",api:"eventing.knative.dev/v1",cat:"extend",note:"Knative event broker"},
+{id:"tekton-task",kind:"Task",api:"tekton.dev/v1",cat:"extend",note:"Tekton pipeline task"},
+{id:"tekton-pipeline",kind:"Pipeline",api:"tekton.dev/v1",cat:"extend",note:"Tekton pipeline"},
+{id:"pipelinerun",kind:"PipelineRun",api:"tekton.dev/v1",cat:"extend",note:"Tekton pipeline execution"},
+{id:"ack-s3",kind:"Bucket",api:"s3.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS S3 bucket via ACK"},
+{id:"ack-dynamodb",kind:"Table",api:"dynamodb.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS DynamoDB table"},
+{id:"ack-rds",kind:"DBInstance",api:"rds.services.k8s.aws/v1alpha1",cat:"cloud",note:"AWS RDS database"},
+{id:"postgresql",kind:"PostgresCluster",api:"postgres-operator.crunchydata.com/v1beta1",cat:"ai",note:"PostgreSQL cluster"},
+{id:"mongodb",kind:"MongoDB",api:"mongodbcommunity.mongodb.com/v1",cat:"ai",note:"MongoDB cluster"},
+{id:"kafka-topic",kind:"KafkaTopic",api:"kafka.strimzi.io/v1beta2",cat:"ai",note:"Kafka topic"},
+{id:"redis",kind:"Redis",api:"redis.redis.opstreaming.com/v1",cat:"ai",note:"Redis cluster"},
+{id:"metallb-pool",kind:"IPAddressPool",api:"metallb.io/v1beta2",cat:"network",note:"MetalLB IP pool"},
+{id:"customresourcedefinition",kind:"CustomResourceDefinition",api:"apiextensions.k8s.io/v1",cat:"extend",note:"Custom resource definition"},
+{id:"mutatingwebhookconfig",kind:"MutatingWebhookConfiguration",api:"admissionregistration.k8s.io/v1",cat:"extend",note:"Mutating webhook"},
+{id:"apiservice",kind:"APIService",api:"apiregistration.k8s.io/v1",cat:"extend",note:"API aggregation service"}
+);
 
 // Merge with original CATEGORIES
 RESOURCES.forEach(r=>{
