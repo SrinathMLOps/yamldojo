@@ -1269,8 +1269,38 @@ aliases:["eks","eksctl","aws","eks cluster","provisioning"]},
 
 ];
 
-// Add 150+ extended resources from items 151-495
+// ========== CONTAINER TYPES & PATTERNS ==========
+// Add container architecture patterns and types
 RESOURCES.push(
+{id:"main-container",kind:"Main Container",api:"v1",cat:"workloads",note:"Primary application container with main process",aliases:["application","main","primary"]},
+{id:"init-container",kind:"InitContainer",api:"v1",cat:"workloads",note:"Runs before main containers for setup tasks",aliases:["init","initialization","setup"]},
+{id:"sidecar-container",kind:"Sidecar Container",api:"v1",cat:"workloads",note:"Runs alongside main app (logging, monitoring, proxy)",aliases:["sidecar","companion","auxiliary"]},
+{id:"ambassador-container",kind:"Ambassador Container",api:"v1",cat:"workloads",note:"Proxies external service communication for main app",aliases:["ambassador","proxy","gateway"]},
+{id:"adapter-container",kind:"Adapter Container",api:"v1",cat:"workloads",note:"Transforms output to conform to external interface",aliases:["adapter","transformer","converter"]},
+{id:"ephemeral-container",kind:"EphemeralContainer",api:"v1",cat:"workloads",note:"Temporary container for debugging live pods",aliases:["ephemeral","debug","temporary"]},
+{id:"pause-container",kind:"Pause Container",api:"v1",cat:"workloads",note:"Infrastructure container holding network namespace",aliases:["pause","infrastructure","namespace"]},
+{id:"debug-container",kind:"Debug Container",api:"v1",cat:"workloads",note:"Debug container (ephemeral) for troubleshooting",aliases:["debug","troubleshoot","diagnostic"]},
+{id:"sandbox-container",kind:"Sandbox Container",api:"v1",cat:"workloads",note:"Isolated runtime (Kata Containers, gVisor, CRI-O)",aliases:["sandbox","kata","gvisor","isolation"]},
+{id:"wasm-container",kind:"WASM Container",api:"v1",cat:"workloads",note:"WebAssembly workload (lightweight, fast)",aliases:["wasm","webassembly","lightweight"]},
+{id:"utility-container",kind:"Utility Container",api:"v1",cat:"workloads",note:"Helper container for common utilities and tools",aliases:["utility","helper","tools"]},
+{id:"proxy-container",kind:"Proxy Container",api:"v1",cat:"workloads",note:"Reverse proxy (Envoy, NGINX, HAProxy)",aliases:["proxy","envoy","nginx","haproxy"]},
+{id:"logging-container",kind:"Logging Container",api:"v1",cat:"workloads",note:"Log collection and forwarding (Fluent Bit, Filebeat)",aliases:["logging","logs","fluent","filebeat"]},
+{id:"monitoring-container",kind:"Monitoring Container",api:"v1",cat:"workloads",note:"Prometheus exporter and metrics collection",aliases:["monitoring","metrics","prometheus","exporter"]},
+{id:"servicemesh-sidecar",kind:"Service Mesh Sidecar",api:"v1",cat:"workloads",note:"Service mesh proxy (Istio Envoy, Linkerd)",aliases:["service mesh","envoy","linkerd","sidecar"]},
+
+// ========== MULTI-CONTAINER PATTERNS & ARCHITECTURES ==========
+{id:"multi-container-pattern",kind:"Multi-Container Pod",api:"v1",cat:"workloads",note:"Pod with multiple containers working together",aliases:["multi-container","patterns","architecture"]},
+{id:"init-sidecar-pattern",kind:"Init + Sidecar Pattern",api:"v1",cat:"workloads",note:"Init container for setup, sidecar for ongoing tasks",aliases:["pattern","architecture"]},
+{id:"ambassador-pattern",kind:"Ambassador Pattern",api:"v1",cat:"workloads",note:"Main app + ambassador container for external communication",aliases:["pattern","proxy"]},
+{id:"adapter-pattern",kind:"Adapter Pattern",api:"v1",cat:"workloads",note:"Main app + adapter for interface compatibility",aliases:["pattern","adapter","interface"]},
+{id:"sidecar-logging",kind:"Sidecar Logging Pattern",api:"v1",cat:"workloads",note:"App + logging sidecar (Fluent Bit, Filebeat)",aliases:["logging","pattern","sidecar"]},
+{id:"sidecar-monitoring",kind:"Sidecar Monitoring Pattern",api:"v1",cat:"workloads",note:"App + monitoring sidecar (Prometheus exporter)",aliases:["monitoring","pattern"]},
+{id:"servicemesh-pattern",kind:"Service Mesh Pattern",api:"v1",cat:"workloads",note:"App + service mesh sidecar (Istio, Linkerd, Kuma)",aliases:["service mesh","pattern","istio"]},
+{id:"vault-agent-pattern",kind:"Vault Agent Pattern",api:"v1",cat:"workloads",note:"App + Vault agent sidecar for secret injection",aliases:["vault","secrets","pattern"]},
+{id:"config-reload-pattern",kind:"Config Reload Pattern",api:"v1",cat:"workloads",note:"App + config watcher sidecar for live reloading",aliases:["configuration","reload","pattern"]},
+{id:"security-scanner-pattern",kind:"Security Scanner Pattern",api:"v1",cat:"workloads",note:"App + security scanning sidecar (Trivy, Falco)",aliases:["security","scanning","pattern"]},
+
+// Add more extended resources
 {id:"karpenter-pool",kind:"NodePool",api:"karpenter.sh/v1",cat:"cloud",note:"Karpenter auto-scaling node pool"},
 {id:"ec2nodeclass",kind:"EC2NodeClass",api:"karpenter.k8s.aws/v1",cat:"cloud",note:"AWS EC2 node configuration"},
 {id:"nodeclaim",kind:"NodeClaim",api:"karpenter.sh/v1",cat:"cloud",note:"Karpenter node provisioning"},
